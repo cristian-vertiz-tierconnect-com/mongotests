@@ -58,7 +58,7 @@ public class dbTreeTest {
 
     public static void getThingBySerial(String serialNumber,String thingPath){
         List<DBObject> result = new ArrayList<>();
-        DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find(new BasicDBObject("_id", 1));
+        DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find(new BasicDBObject(thingPath + "serialNumber", 1));
         while (cursor.hasNext()){
             result.add(cursor.next());
         }
