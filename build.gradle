@@ -14,4 +14,5 @@ dependencies {
     compile 'org.mongodb:mongo-java-driver:2.6.0'
 //    compile 'org.mongodb:bson:2.13.2'
     compile 'org.springframework.data:spring-data-mongodb:1.8.4.RELEASE'
+    compile "org.bitbucket.b_c:jose4j:0.4.1"
 }
