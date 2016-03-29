@@ -24,44 +24,45 @@ public class dbTreeTest {
         init();
 
         // test get all things
-        getAllThings();
+        //getAllThings();
 
         // test get thing by serial
         String serialNumber = "RFID02";
         String thingPath = getPath(serialNumber);
+        getThingBySerial(serialNumber,thingPath);
     }
 
     public static String getPath(String serialNumber){
         String result = null;
         Map<String,Object> paths = new HashMap<>();
-        paths.put("PALLETE01","");
-        paths.put("RFID01","rfid");
-        paths.put("CARTON01","carton");
-        paths.put("RFID02","carton.rfid");
-        paths.put("BOX01","carton.box");
-        paths.put("RFID03","carton.box.rfid");
-        paths.put("ITEM01","carton.box.item");
-        paths.put("RFID03","");
-        paths.put("RFID04","");
+        paths.put("PALLETE01",".");
+        paths.put("RFID01","rfid.");
+        paths.put("CARTON01","carton.");
+        paths.put("RFID02","carton.rfid.");
+        paths.put("BOX01","carton.box.");
+        paths.put("RFID03","carton.box.rfid.");
+        paths.put("ITEM01","carton.box.item.");
+        paths.put("RFID03","carton.box.item.rfid.");
+        paths.put("RFID04","carton.box.item.rfid.");
         return result;
     }
 
     public static void getAllThings(){
-        List<DBObject> result1 = new ArrayList<>();
+        List<DBObject> result = new ArrayList<>();
         DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find(new BasicDBObject("_id", 1));
         while (cursor.hasNext()){
-            result1.add(cursor.next());
+            result.add(cursor.next());
         }
-        System.out.println(result1);
+        System.out.println(result);
     }
 
-    public static void getThingBySerial(String serialNumber){
-        List<DBObject> result1 = new ArrayList<>();
+    public static void getThingBySerial(String serialNumber,String thingPath){
+        List<DBObject> result = new ArrayList<>();
         DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find(new BasicDBObject("_id", 1));
         while (cursor.hasNext()){
-            result1.add(cursor.next());
+            result.add(cursor.next());
         }
-        System.out.println(result1);
+        System.out.println(result);
     }
 
 
