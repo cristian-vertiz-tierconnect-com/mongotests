@@ -1,0 +1,17 @@
+group 'mongoTests'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.5
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // mongodb
+    compile 'org.mongodb:mongo-java-driver:2.13.2'
+    compile 'org.mongodb:bson:2.13.2'
+    compile 'org.springframework.data:spring-data-mongodb:1.8.4.RELEASE'
+}
