@@ -33,7 +33,6 @@ public class dbTreeTest {
     }
 
     public static String getPath(String serialNumber){
-        String result = null;
         Map<String,Object> paths = new HashMap<>();
         paths.put("PALLETE01",".");
         paths.put("RFID01","rfid.");
@@ -44,7 +43,7 @@ public class dbTreeTest {
         paths.put("ITEM01","carton.box.item.");
         paths.put("RFID03","carton.box.item.rfid.");
         paths.put("RFID04","carton.box.item.rfid.");
-        return result;
+        return (String) paths.get(serialNumber);
     }
 
     public static void getAllThings(){
@@ -58,7 +57,7 @@ public class dbTreeTest {
 
     public static void getThingBySerial(String serialNumber,String thingPath){
         List<DBObject> result = new ArrayList<>();
-        DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find(new BasicDBObject(thingPath + "serialNumber", 1));
+        DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find(new BasicDBObject(thingPath + "serialNumber", serialNumber));
         while (cursor.hasNext()){
             result.add(cursor.next());
         }
