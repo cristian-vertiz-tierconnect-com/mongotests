@@ -14,23 +14,20 @@ public class dbRefTest {
     public static void testRefThings(){
 
         List<DBObject> result1 = new ArrayList<>();
-        List<DBObject> result2 = new ArrayList<>();
-        List<DBObject> result3 = new ArrayList<>();
+
         DBCursor cursor = MongoDAOUtil.getInstance().getCollection("ref_things").find(new BasicDBObject("_id", 1));
 
         while (cursor.hasNext()){
             DBObject pallete = cursor.next();
 
-            DBObject result = new BasicDBObject();
-
-            result1.add(getTree(pallete, result));
+            result1.add(getTree(pallete));
         }
 
         System.out.println(result1);
 
     }
 
-    private static DBObject getTree(DBObject doc, DBObject result2) {
+    private static DBObject getTree(DBObject doc) {
 
         DBObject result = new BasicDBObject();
         for(Map.Entry<String, Object> entry : ((Map<String, Object>)doc).entrySet()){
@@ -38,7 +35,7 @@ public class dbRefTest {
                 BasicDBList children = new BasicDBList();
 
                 for(Object ref : (List<Object>)doc.get(entry.getKey())){
-                    children.add(getTree(fetch(ref),result));
+                    children.add(getTree(fetch(ref)));
                 }
 
                 result.put(entry.getKey(), children);
