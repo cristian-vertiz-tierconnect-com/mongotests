@@ -1,7 +1,9 @@
 import com.mongodb.*;
+import dao.MongoDAOUtil;
 import org.jose4j.json.internal.json_simple.JSONObject;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,10 +18,18 @@ public class dbPathTest {
 
 
     static public void main(String[] args) throws IOException {
-        Mongo mongo = new Mongo("localhost", 27017);
-        DB db = mongo.getDB("riot_main");
+        init();
+        pathMongo();
+    }
 
-        pathMongo(db);
+
+    public static void init(){
+        try {
+            MongoDAOUtil.setupMongodb("localhost",27017, "riot_main", null , null, "admin", "control123!");
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
     }
 
     //Materialized paths
@@ -36,18 +46,18 @@ public class dbPathTest {
     }
 
     //Ancestors paths
-    public static void pathMongo(DB db) {
+    public static void pathMongo() {
         //get father
         BasicDBObject query = new BasicDBObject("serialNumber", "BOX1000");
-        DBObject pivote = db.getCollection("path_things").findOne(query);
+        DBObject pivote = MongoDAOUtil.getInstance().getCollection("path_things").findOne(query);
         String pathPivote = pivote.get("path").toString();
-        Map<String,Object> dataFinal = null;
+        DBObject dataFinal = null;
 
-        dataFinal = getParents(db, pathPivote,pivote);
+        dataFinal = getParents(pathPivote,pivote);
 
         BasicDBObject query2 = new BasicDBObject("path", Pattern.compile(pathPivote));
-        DBCursor pivoteData2 = db.getCollection("path_things").find(query2);
-        List<Object> data = new ArrayList<>();
+        DBCursor pivoteData2 = MongoDAOUtil.getInstance().getCollection("path_things").find(query2);
+        BasicDBList data = new BasicDBList();
 
         while( pivoteData2.hasNext() )
         {
@@ -55,11 +65,7 @@ public class dbPathTest {
             data.add(record);
         }
 
-       // dataFinal = getChildren(dataFinal,data, 0);
-
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.putAll( dataFinal );
-        System.out.printf( "JSON: %s", jsonObject );
+        System.out.println( dataFinal );
 
     }
 
@@ -77,13 +83,13 @@ public class dbPathTest {
     }
 
     //Parents
-    public static Map<String,Object> getParents(DB db, String path, DBObject pivote)
+    public static DBObject getParents(String path, DBObject pivote)
     {
-        Map<String, Object> dataMap = new HashMap<>();
+        DBObject dataMap = new BasicDBObject();
         String newPath = "";
         String[] data = path.split(",");
         BasicDBObject query = new BasicDBObject("_id", Integer.parseInt(data[0]));
-        DBObject dbObject= db.getCollection("path_things").findOne(query);
+        DBObject dbObject= MongoDAOUtil.getInstance().getCollection("path_things").findOne(query);
         dataMap.putAll((Map) dbObject);
 
         for(int i=1;i<data.length;i++)
@@ -94,7 +100,7 @@ public class dbPathTest {
         if(newPath!=null && !newPath.trim().isEmpty())
         {
             newPath = newPath.substring(0,newPath.length()-1);
-            dataMap.put("children",getParents(db,newPath,pivote));
+            dataMap.put("children",getParents(newPath,pivote));
         }else
         {
             dataMap.put("children",pivote);
