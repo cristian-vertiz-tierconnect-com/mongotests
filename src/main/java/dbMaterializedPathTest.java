@@ -8,10 +8,7 @@ import org.jose4j.json.internal.json_simple.JSONObject;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -32,6 +29,7 @@ public class DbMaterializedPathTest {
     //paths
     public static void pathMongoReloaded(DB db) {
         //get father
+        final long startTime = System.currentTimeMillis();
         BasicDBObject query = new BasicDBObject("serialNumber", "P10000");
 //        BasicDBObject query = new BasicDBObject("serialNumber", "BOX1000");
         DBObject pivote = db.getCollection("path_things").findOne(query);
@@ -65,12 +63,25 @@ public class DbMaterializedPathTest {
             lstDbObject.add(record);
         }
 
-        Map<String,Object> dataFinal = new HashMap<>();
+        final long endTime = System.currentTimeMillis();
+        long total1 = endTime-startTime;
+        System.out.println("Total Execution Parent & Pivote (miliseconds): "+total1);
+
+        final long startTimeChildren = System.currentTimeMillis();
         String path = lstDbObject.get(0).get("path")!=null?lstDbObject.get(0).get("path").toString():null;
-        Map<String, Object> mapChildren = getTree(lstDbObject,path,0);
-        JSONObject jsonChild = new JSONObject();
-        jsonChild.putAll( mapChildren );
-        System.out.printf( "JSON : %s", jsonChild );
+        List<Map<String, Object>> mapChildren = getTreeList(lstDbObject, path);
+        final long endTimeChildren = System.currentTimeMillis();
+        long total2 = endTimeChildren-startTimeChildren;
+        System.out.println("Total Execution Children (miliseconds): "+total2);
+        long totalMiliseconds = (total1+total2);
+
+
+        int proyeccion = 1000000;
+        int totalMinutes = (int) (((totalMiliseconds*proyeccion)/ (1000*60)) % 60);
+        System.out.println("TOTAL (miliseconds): "+ totalMiliseconds);
+        System.out.println("TOTAL (minutes)    : "+ totalMinutes);
+        System.out.println("TOTAL Proyeccion hasta 1000 (minutes): "+(totalMinutes));
+        System.out.println(mapChildren);
     }
 
     /*Get Parents*/
@@ -117,6 +128,40 @@ public class DbMaterializedPathTest {
             }
             count ++;
             dataRes.put("children", getTree(data, path2,count));
+        }
+
+        return result;
+    }
+
+    //Get Children
+    public static List<Map<String, Object>> getTreeList(List<DBObject> data, String path)
+    {
+        List<Map<String, Object>> result = new ArrayList<>();
+        String value = path;
+
+        for(DBObject obj:data)
+        {
+            if((value==null && obj.get("path")==null)||
+                    obj.get("path")!=null && obj.get("path").toString().equals(value))
+            {
+                result.add((Map) obj);
+            }
+        }
+
+        for (Map<String,Object> dataRes: result) {
+            String path2 = null;
+            if(value==null)
+            {
+                path2= dataRes.get("_id").toString();
+            }else
+            {
+                path2 = value+","+dataRes.get("_id").toString();
+            }
+            List<Map<String,Object>> lstChildren = getTreeList(data, path2);
+            if(lstChildren!=null && !lstChildren.isEmpty())
+            {
+                dataRes.put("children", getTreeList(data, path2));
+            }
         }
 
         return result;
