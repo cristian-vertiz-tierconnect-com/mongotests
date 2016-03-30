@@ -3,9 +3,11 @@
  */
 import com.mongodb.*;
 import com.sun.org.apache.xpath.internal.SourceTree;
+import dao.MongoDAOUtil;
 import org.jose4j.json.internal.json_simple.JSONObject;
 
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,114 +25,101 @@ public class MongoPathRef_2 {
         Mongo mongo = new Mongo("localhost", 27017);
         DB db = mongo.getDB("riot_main");
 
-        pathMongo(db);
+        pathMongoReloaded(db);
     }
 
-    //Materialized paths
-    public static void ancestorsMongo(DB db) {
-        BasicDBObject query = new BasicDBObject("path", "\\/^,1,3,5,7,\\/");
 
-        DBCursor cursorpath = db.getCollection("path_things").find(query);
-
-        // parse results
-        while (cursorpath.hasNext()) {
-            DBObject record = cursorpath.next();
-            System.out.println(record);
-        }
-    }
-
-    //Ancestors paths
-    public static void pathMongo(DB db) {
+    //paths
+    public static void pathMongoReloaded(DB db) {
         //get father
-        BasicDBObject query = new BasicDBObject("serialNumber", "BOX1000");
+        BasicDBObject query = new BasicDBObject("serialNumber", "P10000");
+//        BasicDBObject query = new BasicDBObject("serialNumber", "BOX1000");
         DBObject pivote = db.getCollection("path_things").findOne(query);
-        String pathPivote = pivote.get("path").toString();
-        Map<String,Object> dataFinal = new HashMap<>();
+        String pathPivote = pivote.get("path")!=null?pivote.get("path").toString():null;
 
-//        dataFinal = getParents(db, pathPivote,pivote);
+        List<DBObject> lstDbObject = new ArrayList<>();
+        DBCursor pivoteData2 = null;
+        if(pathPivote!=null)
+        {
+            /********************/
+            //getFather
+            lstDbObject = getFather( pathPivote, db);
 
-        /******************/
-        BasicDBObject query2 = new BasicDBObject("path", Pattern.compile(pathPivote));
-        DBCursor pivoteData2 = db.getCollection("path_things").find(query2);
-        List<DBObject> data = new ArrayList<>();
+            /*******************/
+            //get pivote
+            lstDbObject.add(pivote);
 
+            /******************/
+            //getChildren
+            BasicDBObject query2 = new BasicDBObject("path", Pattern.compile(pathPivote+","+pivote.get("_id")));
+            pivoteData2 = db.getCollection("path_things").find(query2);
+        }else
+        {
+            BasicDBObject query2 = new BasicDBObject("path", 1);
+            pivoteData2 = db.getCollection("path_things").find().sort(query2);
+        }
 
-        String path= null;
         while( pivoteData2.hasNext() )
         {
             DBObject record = pivoteData2.next();
-            data.add(record);
+            lstDbObject.add(record);
         }
 
-        Map<String, Object> withParents = getChildren(dataFinal,data,-1);
+        Map<String,Object> dataFinal = new HashMap<>();
+        String path = lstDbObject.get(0).get("path")!=null?lstDbObject.get(0).get("path").toString():null;
+        Map<String, Object> mapChildren = getTree(lstDbObject,path,0);
         JSONObject jsonChild = new JSONObject();
-        jsonChild.putAll( dataFinal );
-        System.out.printf( "JSON CHILD: %s", jsonChild );
-
-        /******************/
-
-        dataFinal = getParents(db, pathPivote,pivote);
-        System.out.println();
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.putAll( dataFinal );
-        System.out.printf( "JSON PARENT: %s", jsonObject );
-
-//        Map<String, Object> withPivote = (Map) pivote;
-//        withPivote.put("children",dataFinal);
-
-        /******************/
-
-        //Map<String, Object> withParents = (Map) withPivote;
-        dataFinal = getParents(db, pathPivote,pivote);
-        System.out.println();
-
-        /******************/
-
-        System.out.println();
-        JSONObject jsonObject2 = new JSONObject();
-        jsonObject2.putAll( dataFinal );
-        System.out.printf( "JSON: %s", jsonObject2 );
-
+        jsonChild.putAll( mapChildren );
+        System.out.printf( "JSON : %s", jsonChild );
     }
 
-    //Children
-    public static Map<String,Object> getChildren(Map<String,Object> dataFinal, List<DBObject> data, int a )
+    /*Get Parents*/
+    public static List<DBObject> getFather(String path, DB db)
     {
-        // Map<String, Object> dataMap = new HashMap<>();
-        a = a+1;
-        if(a < data.size())
+        List<DBObject> result = new ArrayList<>();
+        if(path!=null)
         {
-            dataFinal.put("children",getChildren((Map)data.get(a),data,a));
+            String[] data = path.split(",");
+            for(int i =0;i<data.length;i++)
+            {
+                BasicDBObject query = new BasicDBObject("_id", Integer.parseInt(data[i]));
+                DBObject dbObject= db.getCollection("path_things").findOne(query);
+                result.add(dbObject);
+            }
         }
-
-        return dataFinal;
+        return result;
     }
 
-    //Parents
-    public static Map<String,Object> getParents(DB db, String path, DBObject pivote)
+    //Get Children
+    public static Map<String,Object> getTree(List<DBObject> data, String path, int count)
     {
-        Map<String, Object> dataMap = new HashMap<>();
-        String newPath = "";
-        String[] data = path.split(",");
-        BasicDBObject query = new BasicDBObject("_id", Integer.parseInt(data[0]));
-        DBObject dbObject= db.getCollection("path_things").findOne(query);
-        dataMap.putAll((Map) dbObject);
+        Map<String, Object> result = new HashMap<>();
+        String value = path;
 
-        for(int i=1;i<data.length;i++)
+        for(DBObject obj:data)
         {
-            newPath = newPath+data[i]+",";
+            if((value==null && obj.get("path")==null)||
+                    obj.get("path")!=null && obj.get("path").toString().equals(value))
+            {
+                result.put(obj.get("_id").toString(),(Map) obj);
+            }
         }
 
-        if(newPath!=null && !newPath.trim().isEmpty())
-        {
-            newPath = newPath.substring(0,newPath.length()-1);
-            dataMap.put("children",getParents(db,newPath,pivote));
-        }else
-        {
-            dataMap.put("children",pivote);
+        for (String key : result.keySet()) {
+            Map<String, Object> dataRes =(Map<String, Object>) result.get(key);
+            String path2 = null;
+            if(value==null)
+            {
+                path2= dataRes.get("_id").toString();
+            }else
+            {
+                path2 = value+","+dataRes.get("_id").toString();
+            }
+            count ++;
+            dataRes.put("children", getTree(data, path2,count));
         }
-        return dataMap;
+
+        return result;
     }
-
 
 }
