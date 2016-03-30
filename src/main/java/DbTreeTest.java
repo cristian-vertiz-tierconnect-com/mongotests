@@ -49,9 +49,9 @@ public class DbTreeTest {
         return paths;
     }
 
-    public static void getAllThings(){
+    public static void getAllThingsTreeView(){
         List<DBObject> result = new ArrayList<>();
-        DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find(new BasicDBObject("_id", 1));
+        DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find();
         while (cursor.hasNext()){
             result.add(cursor.next());
         }
@@ -60,6 +60,9 @@ public class DbTreeTest {
 
     public static void getThingBySerial(String serialNumber,String thingPath,Boolean treeView){
         List<DBObject> result = new ArrayList<>();
+        if (thingPath == null){
+            return;
+        }
         String expression = "${" + StringUtils.substring(thingPath,0,thingPath.length()-1) + "}";
         DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find(new BasicDBObject(thingPath + "serialNumber", serialNumber));
         while (cursor.hasNext()){
@@ -71,15 +74,12 @@ public class DbTreeTest {
                 if (thing instanceof BasicDBList){
                     for(int i = 0; i < ((BasicDBList)thing).size(); i++)
                         if( ((BasicDBObject)((BasicDBList)thing).get(i)).get("serialNumber").equals(serialNumber) ){
-                            removeChildren(((BasicDBObject)((BasicDBList)thing).get(i)));
-                            result.add(((BasicDBObject)((BasicDBList)thing).get(i)));
+                            result.add(removeChildren(((BasicDBObject)((BasicDBList)thing).get(i))));
                         }
                 } else {
-                    removeChildren((BasicDBObject)thing);
-                    result.add((BasicDBObject)thing);
+                    result.add(removeChildren((BasicDBObject)thing));
                 }
             }
-
         }
         System.out.println(result);
     }
@@ -101,26 +101,21 @@ public class DbTreeTest {
             } else {
                 DBObject dbObject = cursor.next();
                 String serial = (String) dbObject.get("serialNumber");
-                if (serial != null && !StringUtils.isEmpty(serial) && StringUtils.contains(serial,serialNumber)){
-                    result.add(dbObject);
-                } else {
-                    for (String expression : getPaths()){
-                        Object thing;
-                        thing = getFormulaValue(null,dbObject,"${" + expression + "}");
-                        if (thing instanceof BasicDBList){
-                            for(int i = 0; i < ((BasicDBList)thing).size(); i++)
-                                if( StringUtils.contains((String)((BasicDBObject)((BasicDBList)thing).get(i)).get("serialNumber"),serialNumber) ){
-                                    removeChildren(((BasicDBObject)((BasicDBList)thing).get(i)));
-                                    result.add(((BasicDBObject)((BasicDBList)thing).get(i)));
-//                                    break;
-                                }
-                        } else {
-                            String sn = (String) ((BasicDBObject)thing).get("serialNumber");
-                            if (sn != null && !StringUtils.isEmpty(sn) && StringUtils.contains(sn,serialNumber)){
-                                removeChildren((BasicDBObject)thing);
-                                result.add((BasicDBObject)thing);
-//                                break;
+                if (serial != null && !StringUtils.isEmpty(serial) && StringUtils.contains(serial,serialNumber)) {
+                    result.add(removeChildren(dbObject));
+                }
+                for (String expression : getPaths()){
+                    Object thing = null;
+                    thing = getFormulaValue(null,dbObject,"${" + expression + "}");
+                    if (thing instanceof BasicDBList){
+                        for(int i = 0; i < ((BasicDBList)thing).size(); i++)
+                            if( StringUtils.contains((String)((BasicDBObject)((BasicDBList)thing).get(i)).get("serialNumber"),serialNumber) ){
+                                result.add(removeChildren(((BasicDBObject)((BasicDBList)thing).get(i))));
                             }
+                    } else {
+                        String sn = (String) ((BasicDBObject)thing).get("serialNumber");
+                        if (sn != null && !StringUtils.isEmpty(sn) && StringUtils.contains(sn,serialNumber)){
+                            result.add(removeChildren((BasicDBObject)thing));
                         }
                     }
                 }
@@ -137,27 +132,30 @@ public class DbTreeTest {
         return result;
     }
 
-    public static void removeChildren(BasicDBObject thing){
+    public static BasicDBObject removeChildren(DBObject thing){
         Map<String,Object> thingAsMap = thing.toMap();
+
+        BasicDBObject result = new BasicDBObject();
         for (Map.Entry<String, Object> property : thingAsMap.entrySet()){
             if (property.getValue() instanceof BasicDBObject){
-                if (((BasicDBObject)property.getValue()).get("isChild").equals("true")){
-                    thing.remove(property.getKey());
+                if (!((BasicDBObject)property.getValue()).get("isChild").equals("true")){
+                    result.append(property.getKey(), property.getValue());
                 }
-            }
-            if (property.getValue() instanceof BasicDBList){
-                thing.remove(property.getKey());
+            } else if (property.getValue() instanceof BasicDBList){
+            } else {
+                result.append(property.getKey(), property.getValue());
             }
         }
+        return result;
     }
 
     public static void main(String [] args){
         init();
-        String serialNumber = "RFID0";
+        String serialNumber = "0";
         String thingPath = getThingPath(serialNumber);
 
 //        test get all things
-//        getAllThings();
+//        getAllThingsTreeView();
 
 //        test get thing by serial in tree view
 //        getThingBySerial(serialNumber,thingPath,true);

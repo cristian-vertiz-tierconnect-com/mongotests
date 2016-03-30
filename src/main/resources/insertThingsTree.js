@@ -115,7 +115,7 @@ db.tree_things.insert(
                 "groupTypeId": NumberLong(3),
                 "groupId": NumberLong(3),
                 "thingTypeId":NumberLong(3)
-            },
+                },
                 {
                     "_id": NumberLong(50),
                     "name": "RFID12",
