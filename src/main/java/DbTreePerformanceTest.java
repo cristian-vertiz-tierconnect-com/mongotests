@@ -46,11 +46,40 @@ public class DbTreePerformanceTest {
 
 //        BasicDBObject doc = new BasicDBObject("_id" , 100).append("level", 100);
         BasicDBObject doc = new BasicDBObject("_id" , 0);
+        doc.append("_id",0);
+        doc.append("groupTypeId",0);
+        doc.append("groupTypeName","groupTypeName"+0);
+        doc.append("groupTypeCode","groupTypeCode"+0);
+        doc.append("groupId",0);
+        doc.append("groupCode","groupCode"+0);
+        doc.append("groupName","groupName"+0);
+        doc.append("thingTypeId",0);
+        doc.append("thingTypeCode","thingTypeCode"+0);
+        doc.append("thingTypeName","thingTypeName"+0);
+        doc.append("name","name"+0);
+        doc.append("serialNumber","serialNumber"+0);
+
+        BasicDBObject udf = new BasicDBObject();
+        udf.append("thingTypeFieldId",0);
+        udf.append("time",new Date());
+        udf.append("value", "ufdValue");
+
+        doc.append("AlertFlag",udf);
+        doc.append("S_Discharge",udf);
+        doc.append("VisitActive",udf);
+        doc.append("S_Waiting",udf);
+        doc.append("VisitDate",udf);
+        doc.append("S_Exam",udf);
+        doc.append("S_Treatment",udf);
+        doc.append("S_Registration_DateTime",udf);
+        doc.append("S_Registration",udf);
+        doc.append("S_Discharge_DateTime",udf);
+
 
         MongoDAOUtil.getInstance().getCollection("tree_test").remove(doc);
 
         BasicDBList arrayChildren = new BasicDBList();
-        for(int i = 1000 ; i > 0 ; i--){
+        for(int i = 1 ; i <= 15000 ; i++){
 
             BasicDBObject thing = new BasicDBObject();
 
@@ -67,10 +96,7 @@ public class DbTreePerformanceTest {
             thing.append("name","name"+i);
             thing.append("serialNumber","serialNumber"+i);
 
-            BasicDBObject udf = new BasicDBObject();
-            udf.append("thingTypeFieldId",0);
             udf.append("time",new Date());
-            udf.append("value", "ufdValue");
 
             thing.append("AlertFlag",udf);
             thing.append("S_Discharge",udf);
