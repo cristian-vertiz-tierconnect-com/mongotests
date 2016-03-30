@@ -223,7 +223,7 @@ db.path_things.insert({
 });
 
 
-
+/************************************/
 //Queries
 
 //All Tree
@@ -246,3 +246,48 @@ db.getCollection('path_things').findOne(
         ,"size.value":"X-Large"
     }
     ,{"size.value":true,_id:false});
+
+
+/***********Expressions***********/
+//How to get a specific value (ELExpression)
+db.getCollection('path_things').findOne(
+    {
+        pathThingType:"pallete_code,cartoon_code,box_code,item_code"
+        ,"size.value":{$regex:/.*X.*/}
+    }
+    ,{serialNumber:true,"size.value":true,_id:false});
+
+
+//Color Value: PALLETE > CARTOON-> ${default_rfid_thingtype.color.value}
+db.getCollection('path_things').find(
+    {
+        "pathThingType":"pallete_code,cartoon_code"
+        ,"thingTypeCode":"default_rfid_thingtype"
+    }
+    ,{serialNumber:true,"color.value":true,_id:false});
+
+//Color Object: PALLETE > CARTOON-> ${default_rfid_thingtype.color}
+db.getCollection('path_things').find(
+    {
+        "pathThingType":"pallete_code,cartoon_code"
+        ,"thingTypeCode":"default_rfid_thingtype"
+    }
+    ,{serialNumber:true,"color":true,_id:false});
+
+//Count: PALLETE > CARTOON-> ${count{"default_rfid_thingtype","color=Pink"}}
+db.getCollection('path_things').find(
+    {
+        "pathThingType":"pallete_code,cartoon_code"
+        ,"thingTypeCode":"default_rfid_thingtype"
+        ,"color.value":"Pink"
+    }
+    ,{serialNumber:true,"color":true,_id:false}).count();
+
+//Count: PALLETE -> ${count{"CARTOON"}}
+db.getCollection('path_things').find(
+    {
+        "pathThingType":/^pallete_code/
+        ,"thingTypeCode":"cartoon_code"
+    }
+    ,{serialNumber:true,"color":true,_id:false}).count();
+

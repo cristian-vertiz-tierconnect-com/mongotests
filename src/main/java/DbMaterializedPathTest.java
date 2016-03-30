@@ -22,20 +22,112 @@ public class DbMaterializedPathTest {
         Mongo mongo = new Mongo("localhost", 27017);
         DB db = mongo.getDB("riot_main");
 
-        pathMongoReloaded(db);
+        pathMongoReloaded2(db);
+    }
+
+    //paths
+    public static void pathMongoReloaded2(DB db) {
+        //get father
+        final long startTime = System.currentTimeMillis();
+        String serial = "DATA1000";
+        BasicDBObject query = new BasicDBObject("serialNumber", "P10000");
+//        BasicDBObject query = new BasicDBObject("serialNumber", "DATA1000-17");
+//        BasicDBObject query = new BasicDBObject("serialNumber", "BOX1000");
+        DBCursor pivoteCursor = db.getCollection("path_things").find(query);
+
+        BasicDBList result = new BasicDBList();
+        while( pivoteCursor.hasNext() )
+        {
+            DBObject pivote = pivoteCursor.next();
+            String pathPivote = pivote.get("path")!=null?pivote.get("path").toString():null;
+
+            BasicDBList lstDbObject = new BasicDBList();
+            DBCursor pivoteData2 = null;
+            if(pathPivote!=null)
+            {
+                /********************/
+                //getFather
+                lstDbObject = getFather( pathPivote, db);
+
+                /*******************/
+                //get pivote
+                lstDbObject.add(pivote);
+
+                /******************/
+                //getChildren
+                BasicDBObject query2 = new BasicDBObject("path", Pattern.compile(pathPivote+","+pivote.get("_id")));
+                pivoteData2 = db.getCollection("path_things").find(query2);
+            }else
+            {
+                /*******************/
+//                //get pivote
+//                lstDbObject.add(pivote);
+
+                /******************/
+                BasicDBObject query2 = new BasicDBObject("path", Pattern.compile("^"+pivote.get("_id").toString()));
+                query2.append("pathThingType",pivote.get("thingTypeCode"));
+                //pivoteData2 = db.getCollection("path_things").find().sort(query2);
+                pivoteData2 = db.getCollection("path_things").find(query2);
+            }
+
+            while( pivoteData2.hasNext() )
+            {
+                DBObject record = pivoteData2.next();
+                lstDbObject.add(record);
+            }
+
+            final long endTime = System.currentTimeMillis();
+            long total1 = endTime-startTime;
+            System.out.println("Total Execution Parent & Pivote (miliseconds): "+total1);
+
+            final long startTimeChildren = System.currentTimeMillis();
+            String path = ((BasicDBObject)lstDbObject.get(0)).get("path")!=null?((BasicDBObject)lstDbObject.get(0)).get("path").toString():null;
+            BasicDBList mapChildren = getTreeList(lstDbObject, path);
+            BasicDBObject pivoteCopy =  getPivoteCopy(pivote);
+            if(mapChildren!=null && mapChildren.size()>0)
+            {
+                pivoteCopy.append("children",mapChildren);
+            }
+            final long endTimeChildren = System.currentTimeMillis();
+            long total2 = endTimeChildren-startTimeChildren;
+            System.out.println("Total Execution Children (miliseconds): "+total2);
+            long totalMiliseconds = (total1+total2);
+
+
+            int proyeccion = 1000000;
+            int totalMinutes = (int) (((totalMiliseconds*proyeccion)/ (1000*60)) % 60);
+            System.out.println("TOTAL (miliseconds): "+ totalMiliseconds);
+            System.out.println("TOTAL (minutes)    : "+ totalMinutes);
+            System.out.println("TOTAL Proyeccion hasta 1000 (minutes): "+(totalMinutes));
+
+            result.add(pivoteCopy);
+//            System.out.println(mapChildren);
+        }
+        System.out.println(result);
     }
 
 
+    public static BasicDBObject getPivoteCopy(DBObject data)
+    {
+        BasicDBObject response = new BasicDBObject();
+        for(String key:data.keySet())
+        {
+            response.append(key,data.get(key));
+        }
+
+        return response;
+    }
     //paths
     public static void pathMongoReloaded(DB db) {
         //get father
         final long startTime = System.currentTimeMillis();
-        BasicDBObject query = new BasicDBObject("serialNumber", "P10000");
+//        BasicDBObject query = new BasicDBObject("serialNumber", "P10000");
+        BasicDBObject query = new BasicDBObject("serialNumber", "DATA1000");
 //        BasicDBObject query = new BasicDBObject("serialNumber", "BOX1000");
         DBObject pivote = db.getCollection("path_things").findOne(query);
         String pathPivote = pivote.get("path")!=null?pivote.get("path").toString():null;
 
-        List<DBObject> lstDbObject = new ArrayList<>();
+        BasicDBList lstDbObject = new BasicDBList();
         DBCursor pivoteData2 = null;
         if(pathPivote!=null)
         {
@@ -68,8 +160,8 @@ public class DbMaterializedPathTest {
         System.out.println("Total Execution Parent & Pivote (miliseconds): "+total1);
 
         final long startTimeChildren = System.currentTimeMillis();
-        String path = lstDbObject.get(0).get("path")!=null?lstDbObject.get(0).get("path").toString():null;
-        List<Map<String, Object>> mapChildren = getTreeList(lstDbObject, path);
+        String path = ((BasicDBObject)lstDbObject.get(0)).get("path")!=null?((BasicDBObject)lstDbObject.get(0)).get("path").toString():null;
+        BasicDBList mapChildren = getTreeList(lstDbObject, path);
         final long endTimeChildren = System.currentTimeMillis();
         long total2 = endTimeChildren-startTimeChildren;
         System.out.println("Total Execution Children (miliseconds): "+total2);
@@ -85,9 +177,9 @@ public class DbMaterializedPathTest {
     }
 
     /*Get Parents*/
-    public static List<DBObject> getFather(String path, DB db)
+    public static BasicDBList getFather(String path, DB db)
     {
-        List<DBObject> result = new ArrayList<>();
+        BasicDBList result = new BasicDBList();
         if(path!=null)
         {
             String[] data = path.split(",");
@@ -102,53 +194,56 @@ public class DbMaterializedPathTest {
     }
 
     //Get Children
-    public static Map<String,Object> getTree(List<DBObject> data, String path, int count)
-    {
-        Map<String, Object> result = new HashMap<>();
-        String value = path;
-
-        for(DBObject obj:data)
-        {
-            if((value==null && obj.get("path")==null)||
-                    obj.get("path")!=null && obj.get("path").toString().equals(value))
-            {
-                result.put(obj.get("_id").toString(),(Map) obj);
-            }
-        }
-
-        for (String key : result.keySet()) {
-            Map<String, Object> dataRes =(Map<String, Object>) result.get(key);
-            String path2 = null;
-            if(value==null)
-            {
-                path2= dataRes.get("_id").toString();
-            }else
-            {
-                path2 = value+","+dataRes.get("_id").toString();
-            }
-            count ++;
-            dataRes.put("children", getTree(data, path2,count));
-        }
-
-        return result;
-    }
+//    public static Map<String,Object> getTree(List<DBObject> data, String path, int count)
+//    {
+//        Map<String, Object> result = new HashMap<>();
+//        String value = path;
+//
+//        for(DBObject obj:data)
+//        {
+//            if((value==null && obj.get("path")==null)||
+//                    obj.get("path")!=null && obj.get("path").toString().equals(value))
+//            {
+//                result.put(obj.get("_id").toString(),(Map) obj);
+//            }
+//        }
+//
+//        for (String key : result.keySet()) {
+//            Map<String, Object> dataRes =(Map<String, Object>) result.get(key);
+//            String path2 = null;
+//            if(value==null)
+//            {
+//                path2= dataRes.get("_id").toString();
+//            }else
+//            {
+//                path2 = value+","+dataRes.get("_id").toString();
+//            }
+//            count ++;
+//            dataRes.put("children", getTree(data, path2,count));
+//        }
+//
+//        return result;
+//    }
 
     //Get Children
-    public static List<Map<String, Object>> getTreeList(List<DBObject> data, String path)
+    public static BasicDBList getTreeList(BasicDBList data, String path)
     {
-        List<Map<String, Object>> result = new ArrayList<>();
+        BasicDBList result = new BasicDBList();
         String value = path;
 
-        for(DBObject obj:data)
+        for(Object objData:data)
         {
+            BasicDBObject obj = (BasicDBObject) objData;
             if((value==null && obj.get("path")==null)||
                     obj.get("path")!=null && obj.get("path").toString().equals(value))
             {
-                result.add((Map) obj);
+                result.add( obj);
             }
         }
 
-        for (Map<String,Object> dataRes: result) {
+        for (Object dataResObj: result)
+        {
+            BasicDBObject dataRes = (BasicDBObject) dataResObj;
             String path2 = null;
             if(value==null)
             {
@@ -157,7 +252,7 @@ public class DbMaterializedPathTest {
             {
                 path2 = value+","+dataRes.get("_id").toString();
             }
-            List<Map<String,Object>> lstChildren = getTreeList(data, path2);
+            BasicDBList lstChildren = getTreeList(data, path2);
             if(lstChildren!=null && !lstChildren.isEmpty())
             {
                 dataRes.put("children", getTreeList(data, path2));
