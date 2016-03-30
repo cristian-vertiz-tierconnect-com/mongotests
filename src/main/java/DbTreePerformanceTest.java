@@ -7,10 +7,7 @@ import dao.MongoDAOUtil;
 import org.apache.commons.lang.StringUtils;
 
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by cvertiz on 3/29/16.
@@ -25,90 +22,85 @@ public class DbTreePerformanceTest {
         }
     }
 
+    private static void fillNestedTest() {
+
+//        BasicDBObject doc = new BasicDBObject("_id" , 100).append("level", 100);
+        BasicDBObject doc = new BasicDBObject("_id", 1);
+        MongoDAOUtil.getInstance().getCollection("tree_test").remove(doc);
+
+        for(int i = 1000 ; i > 0 ; i--){
+
+            BasicDBObject level = new BasicDBObject("_id", i).append("level", i);
+
+            level.append("NEXT", doc);
+
+            doc = level;
+
+        }
+
+        MongoDAOUtil.getInstance().getCollection("tree_test").save(doc);
+
+    }
+
+    private static void fillOneLevelTest() {
+
+//        BasicDBObject doc = new BasicDBObject("_id" , 100).append("level", 100);
+        BasicDBObject doc = new BasicDBObject("_id" , 0);
+
+        MongoDAOUtil.getInstance().getCollection("tree_test").remove(doc);
+
+        BasicDBList arrayChildren = new BasicDBList();
+        for(int i = 1000 ; i > 0 ; i--){
+
+            BasicDBObject thing = new BasicDBObject();
+
+            thing.append("_id",i);
+            thing.append("groupTypeId",i);
+            thing.append("groupTypeName","groupTypeName"+i);
+            thing.append("groupTypeCode","groupTypeCode"+i);
+            thing.append("groupId",i);
+            thing.append("groupCode","groupCode"+i);
+            thing.append("groupName","groupName"+i);
+            thing.append("thingTypeId",i);
+            thing.append("thingTypeCode","thingTypeCode"+i);
+            thing.append("thingTypeName","thingTypeName"+i);
+            thing.append("name","name"+i);
+            thing.append("serialNumber","serialNumber"+i);
+
+            BasicDBObject udf = new BasicDBObject();
+            udf.append("thingTypeFieldId",0);
+            udf.append("time",new Date());
+            udf.append("value", "ufdValue");
+
+            thing.append("AlertFlag",udf);
+            thing.append("S_Discharge",udf);
+            thing.append("VisitActive",udf);
+            thing.append("S_Waiting",udf);
+            thing.append("VisitDate",udf);
+            thing.append("S_Exam",udf);
+            thing.append("S_Treatment",udf);
+            thing.append("S_Registration_DateTime",udf);
+            thing.append("S_Registration",udf);
+            thing.append("S_Discharge_DateTime",udf);
+
+            arrayChildren.add(thing);
+
+        }
+
+        doc.append("children", arrayChildren);
+
+        MongoDAOUtil.getInstance().getCollection("tree_test").save(doc);
+
+    }
+
     public static void main(String [] args){
         init();
 
-        // test get all things
-        //getAllThings();
+        fillNestedTest();
 
-        String serialNumber = "RFID02";
-        String thingPath = getPath(serialNumber);
-        // test get thing by serial in tree view
-        // getThingBySerialTreeView(serialNumber, thingPath);
-        // test get thing by serial no tree view
-        getThingBySerialNoTreeView(serialNumber, thingPath);
+        fillOneLevelTest();
+
     }
 
-    public static String getPath(String serialNumber){
-        Map<String,Object> paths = new HashMap<>();
-        paths.put("PALLETE01",".");
-        paths.put("RFID00","rfid.");
-        paths.put("CARTON01","carton.");
-        paths.put("RFID01","carton.rfid.");
-        paths.put("RFID02","carton.rfid.");
-        paths.put("BOX01","carton.box.");
-        paths.put("RFID03","carton.box.rfid.");
-        paths.put("ITEM01","carton.box.item.");
-        paths.put("RFID04","carton.box.item.rfid.");
-        paths.put("RFID05","carton.box.item.rfid.");
-        return (String) paths.get(serialNumber);
-    }
-
-    public static void getAllThings(){
-        List<DBObject> result = new ArrayList<>();
-        DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find(new BasicDBObject("_id", 1));
-        while (cursor.hasNext()){
-            result.add(cursor.next());
-        }
-        System.out.println(result);
-    }
-
-    public static void getThingBySerialTreeView(String serialNumber,String thingPath){
-        List<DBObject> result = new ArrayList<>();
-        DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find(new BasicDBObject(thingPath + "serialNumber", serialNumber));
-        while (cursor.hasNext()){
-            result.add(cursor.next());
-        }
-        System.out.println(result);
-    }
-
-    public static void getThingBySerialNoTreeView(String serialNumber,String thingPath){
-        List<DBObject> things = new ArrayList<>();
-        String expression = "${" + StringUtils.substring(thingPath,0,thingPath.length()-1) + "}";
-        Object thing;
-        DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find(new BasicDBObject(thingPath + "serialNumber", serialNumber));
-        while (cursor.hasNext()){
-            thing = getFormulaValue(null,cursor.next(),expression);
-            if (thing instanceof BasicDBList){
-                for(int i = 0; i < ((BasicDBList)thing).size(); i++)
-                    if( ((BasicDBObject)((BasicDBList)thing).get(i)).get("serialNumber").equals(serialNumber) ){
-                        removeChildren(((BasicDBObject)((BasicDBList)thing).get(i)));
-                        things.add(((BasicDBObject)((BasicDBList)thing).get(i)));
-                    }
-            } else {
-                removeChildren((BasicDBObject)thing);
-                things.add((BasicDBObject)thing);
-            }
-        }
-        System.out.println(things.toString());
-    }
-    public static Object getFormulaValue(Map<String, Object> udf, Object thing, String formula){
-        Object result;
-        ElExpressionService ees = new ElExpressionService();
-        ees.initialize(udf,thing);
-        result = ees.evaluate(formula,false);
-        return result;
-    }
-
-    public static void removeChildren(BasicDBObject thing){
-        Map<String,Object> thingAsMap = thing.toMap();
-        for (Map.Entry<String, Object> property : thingAsMap.entrySet()){
-            if (property.getValue() instanceof BasicDBObject){
-                if (((BasicDBObject)property.getValue()).get("isChild").equals("true")){
-                    thing.remove(property.getKey());
-                }
-            }
-        }
-    }
 
 }
