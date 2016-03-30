@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 /**
  * Created by rchirinos on 3/29/16.
  */
-public class MongoPathRef_2 {
+public class dbMaterializedPathTest {
 
 
     static public void main(String[] args) throws IOException {
