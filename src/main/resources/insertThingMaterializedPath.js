@@ -23,7 +23,7 @@ db.path_things.insert({
         "value" : "Gray"
     },
     "pathThingType" : "pallete_code",
-    "path" : "1"
+    "path" : ",1,"
 });
 
 /* 3 */
@@ -32,7 +32,7 @@ db.path_things.insert({
     "thingTypeCode" : "cartoon_code",
     "serialNumber" : "CARTOON1000",
     "pathThingType" : "pallete_code",
-    "path" : "1"
+    "path" : ",1,"
 });
 
 /* 4 */
@@ -51,7 +51,7 @@ db.path_things.insert({
         "value" : "Pink"
     },
     "pathThingType" : "pallete_code,cartoon_code",
-    "path" : "1,3"
+    "path" : ",1,3,"
 });
 
 /* 5 */
@@ -60,7 +60,7 @@ db.path_things.insert({
     "thingTypeCode" : "box_code",
     "serialNumber" : "BOX1000",
     "pathThingType" : "pallete_code,cartoon_code",
-    "path" : "1,3"
+    "path" : ",1,3,"
 });
 
 /* 6 */
@@ -79,7 +79,7 @@ db.path_things.insert({
         "value" : "Black"
     },
     "pathThingType" : "pallete_code,cartoon_code,box_code",
-    "path" : "1,3,5"
+    "path" : ",1,3,5,"
 });
 
 /* 7 */
@@ -88,7 +88,7 @@ db.path_things.insert({
     "thingTypeCode" : "item_code",
     "serialNumber" : "ITEM1000",
     "pathThingType" : "pallete_code,cartoon_code,box_code",
-    "path" : "1,3,5"
+    "path" : ",1,3,5,"
 });
 
 /* 8 */
@@ -107,7 +107,7 @@ db.path_things.insert({
         "value" : "Gray"
     },
     "pathThingType" : "pallete_code,cartoon_code,box_code,item_code",
-    "path" : "1,3,5,7"
+    "path" : ",1,3,5,7,"
 });
 
 /* 9 */
@@ -135,7 +135,7 @@ db.path_things.insert({
         "value" : "Pink"
     },
     "pathThingType" : "pallete_code",
-    "path" : "9"
+    "path" : ",9,"
 });
 
 /* 11 */
@@ -144,7 +144,7 @@ db.path_things.insert({
     "serialNumber" : "CARTOON1001",
     "thingTypeCode" : "cartoon_code",
     "pathThingType" : "pallete_code",
-    "path" : "9"
+    "path" : ",9,"
 });
 
 /* 12 */
@@ -163,7 +163,7 @@ db.path_things.insert({
         "value" : "Black"
     },
     "pathThingType" : "pallete_code,cartoon_code",
-    "path" : "9,11"
+    "path" : ",9,11,"
 });
 
 /* 13 */
@@ -172,7 +172,7 @@ db.path_things.insert({
     "serialNumber" : "BOX1001",
     "thingTypeCode" : "box_code",
     "pathThingType" : "pallete_code,cartoon_code",
-    "path" : "9,11"
+    "path" : ",9,11,"
 });
 
 /* 14 */
@@ -191,7 +191,7 @@ db.path_things.insert({
         "value" : "Green"
     },
     "pathThingType" : "pallete_code,cartoon_code,box_code",
-    "path" : "9,11,13"
+    "path" : ",9,11,13,"
 });
 
 /* 15 */
@@ -200,7 +200,7 @@ db.path_things.insert({
     "serialNumber" : "ITEM1001",
     "thingTypeCode" : "item_code",
     "pathThingType" : "pallete_code,cartoon_code,box_code",
-    "path" : "9,11,13"
+    "path" : ",9,11,13,"
 });
 
 /* 16 */
@@ -219,7 +219,7 @@ db.path_things.insert({
         "value" : "Green"
     },
     "pathThingType" : "pallete_code,cartoon_code,box_code,item_code",
-    "path" : "9,11,13,15"
+    "path" : ",9,11,13,15,"
 });
 
 

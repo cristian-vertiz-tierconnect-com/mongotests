@@ -10,6 +10,7 @@ import java.util.Date;
  */
 public class DbMatPathPerformanceTest {
 
+    public static int MAX_THINGS = 27;
     public static void init(){
         try {
             MongoDAOUtil.setupMongodb("localhost",27017, "riot_main", null , null, "admin", "control123!");
@@ -33,12 +34,6 @@ public class DbMatPathPerformanceTest {
         doc.append("pathThingType",null);
         doc.append("path",null);
 
-//        for(int i = 1000 ; i > 0 ; i--){
-//
-//            BasicDBObject level = new BasicDBObject("_id", i).append("level", i);
-//            level.append("NEXT", doc);
-//            doc = level;
-//        }
 
         MongoDAOUtil.getInstance().getCollection(collectionName).save(doc);
 
@@ -46,7 +41,7 @@ public class DbMatPathPerformanceTest {
 
     private static void fillOneLevelTest(String collectionName) {
 
-        for(int i = 1000 ; i > 17 ; i--){
+        for(int i = MAX_THINGS ; i > 17 ; i--){
 
             BasicDBObject thing = new BasicDBObject();
 
@@ -56,7 +51,7 @@ public class DbMatPathPerformanceTest {
             thing.append("name","name"+i);
             thing.append("serialNumber","DATA"+i);
             thing.append("pathThingType","DATA_CODE");
-            thing.append("path","17");
+            thing.append("path",",17,");
 
             BasicDBObject udf = new BasicDBObject();
             udf.append("thingTypeFieldId",0);
