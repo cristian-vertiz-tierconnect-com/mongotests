@@ -29,8 +29,8 @@ public class DbMaterializedPathTest {
     public static void pathMongoReloaded2(DB db) {
         //get father
         final long startTime = System.currentTimeMillis();
-        String serial = "DATA1000";
-        BasicDBObject query = new BasicDBObject("serialNumber", "P10000");
+        String serial = "RFID1002";
+        BasicDBObject query = new BasicDBObject("serialNumber", serial);//P10000
 //        BasicDBObject query = new BasicDBObject("serialNumber", "DATA1000-17");
 //        BasicDBObject query = new BasicDBObject("serialNumber", "BOX1000");
         DBCursor pivoteCursor = db.getCollection("path_things").find(query);
@@ -56,7 +56,7 @@ public class DbMaterializedPathTest {
 
                 /******************/
                 //getChildren
-                BasicDBObject query2 = new BasicDBObject("path", Pattern.compile(","+pathPivote+","+pivote.get("_id")+","));
+                BasicDBObject query2 = new BasicDBObject("path", Pattern.compile("^"+pathPivote+pivote.get("_id")+","));
                 pivoteData2 = db.getCollection("path_things").find(query2);
             }else
             {
@@ -219,7 +219,7 @@ public class DbMaterializedPathTest {
             String path2 = null;
             if(value==null)
             {
-                path2= dataRes.get("_id").toString();
+                path2= ","+dataRes.get("_id").toString()+",";
             }else
             {
                 path2 = value+dataRes.get("_id").toString()+",";
