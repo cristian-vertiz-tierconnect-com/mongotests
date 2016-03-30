@@ -20,7 +20,7 @@ public class ThingResolver extends ELResolver {
 
     @Override
     public Object getValue(ELContext context, Object base, Object property) {
-        System.out.println( "count: " + count + " base='" + base + "' property='" + property + "'" );
+//        System.out.println( "count: " + count + " base='" + base + "' property='" + property + "'" );
         Object value = null;
 
         if( base == null ) {
