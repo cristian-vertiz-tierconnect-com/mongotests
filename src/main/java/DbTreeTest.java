@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * Created by cvertiz on 3/29/16.
  */
-public class dbTreeTest {
+public class DbTreeTest {
 
     public static void init(){
         try {

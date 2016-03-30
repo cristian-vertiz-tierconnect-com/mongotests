@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Created by cvertiz on 3/29/16.
  */
-public class dbRefTest {
+public class DbRefTest {
 
     public static void testRefThings(){
 

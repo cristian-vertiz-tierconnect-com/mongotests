@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 /**
  * Created by rchirinos on 3/29/16.
  */
-public class dbPathTest {
+public class DbPathTest {
 
 
     static public void main(String[] args) throws IOException {
