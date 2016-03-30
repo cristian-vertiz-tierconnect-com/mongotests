@@ -25,16 +25,26 @@ public class DbMaterializedPathTest {
         pathMongoReloaded2(db);
     }
 
+    public static void pathMongoAll(DB db)
+    {
+        BasicDBObject sortData = new BasicDBObject("path", 1);
+        DBCursor pivoteCursor = db.getCollection("path_things").find().sort(sortData);
+
+        while( pivoteCursor.hasNext() )
+        {
+            //TODO
+        }
+    }
+
     //paths
     public static void pathMongoReloaded2(DB db) {
         //get father
         final long startTime = System.currentTimeMillis();
-        String serial = "RFID1002";
+        String serial = "RFID1002";//RFID1002
         BasicDBObject query = new BasicDBObject("serialNumber", serial);//P10000
 //        BasicDBObject query = new BasicDBObject("serialNumber", "DATA1000-17");
 //        BasicDBObject query = new BasicDBObject("serialNumber", "BOX1000");
         DBCursor pivoteCursor = db.getCollection("path_things").find(query);
-//        DBCursor pivoteCursor = db.getCollection("path_things").find();
 
         BasicDBList result = new BasicDBList();
         while( pivoteCursor.hasNext() )
@@ -72,10 +82,15 @@ public class DbMaterializedPathTest {
                 pivoteData2 = db.getCollection("path_things").find(query2);
             }
 
+            BasicDBList lstDBObjectChild = new BasicDBList();
             while( pivoteData2.hasNext() )
             {
                 DBObject record = pivoteData2.next();
-                lstDbObject.add(record);
+                lstDBObjectChild.add(record);
+            }
+            if(lstDBObjectChild!=null && lstDBObjectChild.size()>0)
+            {
+                lstDbObject.addAll(lstDBObjectChild);
             }
 
             final long endTime = System.currentTimeMillis();
@@ -85,10 +100,18 @@ public class DbMaterializedPathTest {
             final long startTimeChildren = System.currentTimeMillis();
             String path = ((BasicDBObject)lstDbObject.get(0)).get("path")!=null?((BasicDBObject)lstDbObject.get(0)).get("path").toString():null;
             BasicDBList mapChildren = getTreeList(lstDbObject, path);
-            BasicDBObject pivoteCopy =  getPivoteCopy(pivote);
-            if(mapChildren!=null && mapChildren.size()>0)
+
+            Object resultData = null;
+            //if(mapChildren!=null && mapChildren.size()>0)
+            if(lstDBObjectChild!=null && lstDBObjectChild.size()>0)
             {
-                pivoteCopy.append("children",mapChildren);
+//                BasicDBObject pivoteCopy =  getPivoteCopy(pivote);
+//                pivoteCopy.append("children",mapChildren);
+//                resultData = pivoteCopy;
+                resultData = mapChildren;
+            }else
+            {
+                resultData = lstDbObject.get(0);
             }
             final long endTimeChildren = System.currentTimeMillis();
             long total2 = endTimeChildren-startTimeChildren;
@@ -102,7 +125,7 @@ public class DbMaterializedPathTest {
 //            System.out.println("TOTAL (minutes)    : "+ totalMinutes);
 //            System.out.println("TOTAL Proyeccion hasta "+proyeccion+" things: "+(totalMinutes*proyeccion));
 
-            result.add(pivoteCopy);
+            result.add(resultData);
 //            System.out.println(mapChildren);
         }
         System.out.println(result);
