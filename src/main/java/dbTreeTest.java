@@ -1,5 +1,7 @@
 import com.mongodb.*;
+import dao.ElExpressionService;
 import dao.MongoDAOUtil;
+import org.apache.commons.lang.*;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -26,23 +28,26 @@ public class dbTreeTest {
         // test get all things
         //getAllThings();
 
-        // test get thing by serial
         String serialNumber = "RFID02";
         String thingPath = getPath(serialNumber);
-        getThingBySerial(serialNumber,thingPath);
+        // test get thing by serial in tree view
+        // getThingBySerialTreeView(serialNumber, thingPath);
+        // test get thing by serial no tree view
+        getThingBySerialNoTreeView(serialNumber, thingPath);
     }
 
     public static String getPath(String serialNumber){
         Map<String,Object> paths = new HashMap<>();
         paths.put("PALLETE01",".");
-        paths.put("RFID01","rfid.");
+        paths.put("RFID00","rfid.");
         paths.put("CARTON01","carton.");
+        paths.put("RFID01","carton.rfid.");
         paths.put("RFID02","carton.rfid.");
         paths.put("BOX01","carton.box.");
         paths.put("RFID03","carton.box.rfid.");
         paths.put("ITEM01","carton.box.item.");
-        paths.put("RFID03","carton.box.item.rfid.");
         paths.put("RFID04","carton.box.item.rfid.");
+        paths.put("RFID05","carton.box.item.rfid.");
         return (String) paths.get(serialNumber);
     }
 
@@ -55,7 +60,7 @@ public class dbTreeTest {
         System.out.println(result);
     }
 
-    public static void getThingBySerial(String serialNumber,String thingPath){
+    public static void getThingBySerialTreeView(String serialNumber,String thingPath){
         List<DBObject> result = new ArrayList<>();
         DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find(new BasicDBObject(thingPath + "serialNumber", serialNumber));
         while (cursor.hasNext()){
@@ -64,5 +69,43 @@ public class dbTreeTest {
         System.out.println(result);
     }
 
+    public static void getThingBySerialNoTreeView(String serialNumber,String thingPath){
+        List<DBObject> things = new ArrayList<>();
+        String expression = "${" + StringUtils.substring(thingPath,0,thingPath.length()-1) + "}";
+        Object thing;
+        DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find(new BasicDBObject(thingPath + "serialNumber", serialNumber));
+        while (cursor.hasNext()){
+            thing = getFormulaValue(null,cursor.next(),expression);
+            if (thing instanceof BasicDBList){
+                for(int i = 0; i < ((BasicDBList)thing).size(); i++)
+                    if( ((BasicDBObject)((BasicDBList)thing).get(i)).get("serialNumber").equals(serialNumber) ){
+                        removeChildren(((BasicDBObject)((BasicDBList)thing).get(i)));
+                        things.add(((BasicDBObject)((BasicDBList)thing).get(i)));
+                    }
+            } else {
+                removeChildren((BasicDBObject)thing);
+                things.add((BasicDBObject)thing);
+            }
+        }
+        System.out.println(things.toString());
+    }
+    public static Object getFormulaValue(Map<String, Object> udf, Object thing, String formula){
+        Object result;
+        ElExpressionService ees = new ElExpressionService();
+        ees.initialize(udf,thing);
+        result = ees.evaluate(formula,false);
+        return result;
+    }
+
+    public static void removeChildren(BasicDBObject thing){
+        Map<String,Object> thingAsMap = thing.toMap();
+        for (Map.Entry<String, Object> property : thingAsMap.entrySet()){
+            if (property.getValue() instanceof BasicDBObject){
+                if (((BasicDBObject)property.getValue()).get("isChild").equals("true")){
+                    thing.remove(property.getKey());
+                }
+            }
+        }
+    }
 
 }
