@@ -30,11 +30,11 @@ public class DummyDataTree {
     private static String[] THING_TYPE_NAMES = {
             "pallete",
             "pallete,rfid",
-            "pallete,carton",
+//            "pallete,carton",
             "pallete,carton,rfid",
-            "pallete,carton,box",
+//            "pallete,carton,box",
             "pallete,carton,box,rfid",
-            "pallete,carton,box,item",
+//            "pallete,carton,box,item",
             "pallete,carton,box,item,rfid",
     };
 
@@ -57,22 +57,21 @@ public class DummyDataTree {
             String[] levels = thingTypeList.get(level).get("thingType").toString().split(",");
             String[] levelsCodes = thingTypeList.get(level).get("thingTypeCode").toString().split(",");
             BasicDBObject doc = new BasicDBObject();
-            BasicDBList arrayChildren = new BasicDBList();
-            for (int k = 0; k < levels.length; k++) {
+            List<BasicDBObject> thingList = new ArrayList<>();
+             for (int k = 0; k < levels.length; k++) {
                 Map<String, Object> thingMap = dummyDataUtils.newThingTree(Long.valueOf(String.valueOf(++id)), levels[k].toUpperCase());
                 BasicDBObject thingObject = new BasicDBObject();
                 for (Map.Entry<String, Object> entry : thingMap.entrySet()) {
-                    if (k == 0) {
-                        doc.append(entry.getKey(), entry.getValue());
-                    } else {
                         thingObject.append(entry.getKey(), entry.getValue());
-                    }
                 }
-                if (k > 0) {
-                    arrayChildren.add(thingObject);
-                }
+                thingList.add(0, thingObject);
             }
-            doc.append("children", arrayChildren);
+            doc = thingList.get(0);
+            thingList.remove(0);
+            int posAux = levels.length-1;
+            for (BasicDBObject t:thingList) {
+                doc = t.append(levels[posAux--], doc);
+            }
             MongoDAOUtil.getInstance().getCollection(COLLECTION_NAME).save(doc);
         }
     }
