@@ -12,9 +12,9 @@ import java.util.Map;
  * Created by rsejas on 3/31/16.
  */
 public class DummyDataPath {
-    private static int MAX_THINGS = 100;
+    private static int MAX_THINGS = 10;
     private static int MAX_LEVELS = 6;
-    private static String COLLECTION_NAME = "dummy_data_path";
+    private static String COLLECTION_NAME = "path_things";
     private static String[] THING_TYPE_CODES = {
             "pallete_code",
             "pallete_code,default_rfid_thingtype",
