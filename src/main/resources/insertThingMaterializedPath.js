@@ -222,6 +222,12 @@ db.path_things.insert({
     "path" : ",9,11,13,15,"
 });
 
+db.getCollection('path_things').insert({_id:NumberLong(17),thingTypeCode:"TEST",serialNumber:"TEST1000",pathThingType:null,path:null})
+db.getCollection('path_things').insert({_id:NumberLong(18),thingTypeCode:"TESTL1",serialNumber:"TESTL11000",pathThingType:"TEST",path:",17,"})
+db.getCollection('path_things').insert({_id:NumberLong(19),thingTypeCode:"default_rfid_thingtype",serialNumber:"RFID1008",pathThingType:"TEST,TESTL1",path:",17,18,"})
+
+db.getCollection('path_things').insert({_id:NumberLong(20),thingTypeCode:"default_rfid_thingtype",serialNumber:"RFID1009",pathThingType:null,path:null})
+db.getCollection('path_things').insert({_id:NumberLong(21),thingTypeCode:"default_rfid_thingtype",serialNumber:"RFID1010",pathThingType:null,path:null})
 
 /************************************/
 //Queries

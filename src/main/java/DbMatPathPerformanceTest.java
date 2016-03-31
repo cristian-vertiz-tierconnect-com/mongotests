@@ -24,6 +24,7 @@ public class DbMatPathPerformanceTest {
         init();
         fillNestedTest("path_things");
         fillOneLevelTest("path_things");
+        System.out.println(MAX_THINGS + "created");
     }
 
     private static void fillNestedTest(String collectionName) {
@@ -53,7 +54,7 @@ public class DbMatPathPerformanceTest {
             thing.append("pathThingType","DATA_CODE");
             thing.append("path",",17,");
 
-            BasicDBObject udf = new BasicDBObject();
+            /*BasicDBObject udf = new BasicDBObject();
             udf.append("thingTypeFieldId",0);
             udf.append("time",new Date());
             udf.append("value", "ufdValue");
@@ -67,7 +68,7 @@ public class DbMatPathPerformanceTest {
             thing.append("S_Treatment",udf);
             thing.append("S_Registration_DateTime",udf);
             thing.append("S_Registration",udf);
-            thing.append("S_Discharge_DateTime",udf);
+            thing.append("S_Discharge_DateTime",udf);*/
 
             MongoDAOUtil.getInstance().getCollection(collectionName).save(thing);
 

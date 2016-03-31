@@ -2,13 +2,12 @@
  * Created by rchirinos on 3/29/16.
  */
 import com.mongodb.*;
-import com.sun.org.apache.xpath.internal.SourceTree;
 import dao.MongoDAOUtil;
-import org.jose4j.json.internal.json_simple.JSONObject;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 
@@ -17,118 +16,227 @@ import java.util.regex.Pattern;
  */
 public class DbMaterializedPathTest {
 
+    //public static DB db = null;
 
     static public void main(String[] args) throws IOException {
-        Mongo mongo = new Mongo("localhost", 27017);
-        DB db = mongo.getDB("riot_main");
 
-        pathMongoReloaded2(db);
+        init();
+        //Mongo mongo = new Mongo("localhost", 27017);
+        //db = mongo.getDB("riot_main");
+
+        getTreeExamples();
+        System.out.println();
+        System.out.println();
+        //getPlainExamples();
+        System.out.println();
+        System.out.println();
+        //getThingTypeTreeExamples();
+        System.out.println();
+        System.out.println();
+        //getThingTypePlainExamples();
+        System.out.println();
+        System.out.println();
+        //createNewThing();
+        //updateNewThing();
+
+
+
     }
 
-    public static void pathMongoAll(DB db)
+    public static void getTreeExamples()
     {
-        BasicDBObject sortData = new BasicDBObject("path", 1);
-        DBCursor pivoteCursor = db.getCollection("path_things").find().sort(sortData);
+        System.out.println("*******TREE DATA");
+        String serial = "P10000";//P10000 CARTOON1000 RFID1002 BOX1000 ITEM1000 RFID1003  DATA1000-17
+        lstThingListTree(serial, null);
+//        System.out.println();
+//        serial = "ITEM1000";
+//        lstThingListTree(serial, null);
+//        System.out.println();
+//        serial = "RFID1003";
+//        lstThingListTree(serial, null);
+//        System.out.println();
+//        serial = "DATA22";
+//        lstThingListTree(serial, null);
+//        System.out.println();
+//        lstThingListTree(null, null);
+    }
 
-        while( pivoteCursor.hasNext() )
+    public static void getPlainExamples()
+    {
+        System.out.println("*******PLAIN DATA");
+        String serialPlain = "P10000"; //P10000 CARTOON1000 RFID1002 BOX1000 ITEM1000 RFID1003  DATA1000-17
+        lstThingPlain(serialPlain,null);
+        System.out.println();
+        serialPlain = "ITEM1000";
+        lstThingPlain(serialPlain,null);
+        System.out.println();
+        serialPlain = "RFID1003";
+        lstThingPlain(serialPlain,null);
+        System.out.println();
+        serialPlain = "DATA22";
+        lstThingPlain(serialPlain,null);
+        System.out.println();
+        lstThingPlain(null,null);
+    }
+
+    public static void getThingTypeTreeExamples()
+    {
+        /*
+        * pallete_code
+        * cartoon_code
+        * box_code
+        * item_code
+        * default_rfid_thingtype
+        * */
+        System.out.println("*******TREE DATA");
+        String thingTypeCode = "default_rfid_thingtype";
+        lstThingListTree(null,thingTypeCode);
+
+    }
+
+    public static void getThingTypePlainExamples()
+    {
+        /*
+        * pallete_code
+        * cartoon_code
+        * box_code
+        * item_code
+        * default_rfid_thingtype
+        * */
+        System.out.println("*******TREE DATA");
+        String thingTypeCode = "default_rfid_thingtype";
+        lstThingPlain(null,thingTypeCode);
+
+    }
+
+    /*****Plain*/
+    public static void lstThingPlain(String serial, String thingTypeCode)
+    {
+        final long startTime = System.currentTimeMillis();
+        DBCursor pivotCursor = null;
+        BasicDBList result   = new BasicDBList();
+        BasicDBObject query    = new BasicDBObject();
+        if(serial==null && thingTypeCode==null)
         {
-            //TODO
+            query.append("path", null);
         }
+        if(serial!=null)
+        {
+            query.append("serialNumber", serial);
+        }
+        if(thingTypeCode!=null)
+        {
+            query.append("thingTypeCode", thingTypeCode);
+        }
+        pivotCursor = MongoDAOUtil.getInstance().getCollection("path_things").find(query);
+        while( pivotCursor.hasNext() )
+        {
+            result.add(pivotCursor.next());
+        }
+        System.out.println(result);
+
+        final long endTime = System.currentTimeMillis();
+        final long totalTime = endTime-startTime;
+        System.out.println("TOTAL TIME (milliseconds): "+(totalTime));
     }
 
     //paths
-    public static void pathMongoReloaded2(DB db) {
-        //get father
-        final long startTime = System.currentTimeMillis();
-        String serial = "RFID1002";//RFID1002
-        BasicDBObject query = new BasicDBObject("serialNumber", serial);//P10000
-//        BasicDBObject query = new BasicDBObject("serialNumber", "DATA1000-17");
-//        BasicDBObject query = new BasicDBObject("serialNumber", "BOX1000");
-        DBCursor pivoteCursor = db.getCollection("path_things").find(query);
+    public static void lstThingListTree(String serial, String thingTypeCode) {
 
-        BasicDBList result = new BasicDBList();
-        while( pivoteCursor.hasNext() )
+        final long startTime = System.currentTimeMillis();
+        DBCursor pivotCursor   = null;
+        BasicDBList result     = new BasicDBList();
+        BasicDBObject query    = new BasicDBObject();
+        Set<String> container = new HashSet<>();
+
+        if(serial==null && thingTypeCode==null)
         {
-            DBObject pivote = pivoteCursor.next();
-            String pathPivote = pivote.get("path")!=null?pivote.get("path").toString():null;
+            query.append("path", null);
+        }
+        if(serial!=null)
+        {
+            query.append("serialNumber", serial);
+        }
+        if(thingTypeCode!=null)
+        {
+            query.append("thingTypeCode", thingTypeCode);
+        }
+
+        pivotCursor = MongoDAOUtil.getInstance().getCollection("path_things").find(query);
+        while( pivotCursor.hasNext() )
+        {
+            long startTimeOne = System.currentTimeMillis();
+            Object resultData   = null;
+            DBCursor pivotData2 = null;
+
+            DBObject pivot = pivotCursor.next();
+            String pathPivot = pivot.get("path")!=null?pivot.get("path").toString():null;
 
             BasicDBList lstDbObject = new BasicDBList();
-            DBCursor pivoteData2 = null;
-            if(pathPivote!=null)
+            if(pathPivot!=null)
             {
                 /********************/
                 //getFather
-                lstDbObject = getFather( pathPivote, db);
+                if(container!=null && container.contains(pathPivot.substring(1,2))){
+                    continue;
+                }else{
+                    container.add(pathPivot.substring(1,2));
+                }
+                lstDbObject = getFather( pathPivot);
 
                 /*******************/
-                //get pivote
-                lstDbObject.add(pivote);
+                //get pivot
+                lstDbObject.add(pivot);
 
                 /******************/
                 //getChildren
-                BasicDBObject query2 = new BasicDBObject("path", Pattern.compile("^"+pathPivote+pivote.get("_id")+","));
-                pivoteData2 = db.getCollection("path_things").find(query2);
+                BasicDBObject query2 = new BasicDBObject("path", Pattern.compile("^"+pathPivot+pivot.get("_id")+","));
+                pivotData2 = MongoDAOUtil.getInstance().getCollection("path_things").find(query2);
             }else
             {
                 /*******************/
-//                //get pivote
-//                lstDbObject.add(pivote);
+                //get pivot
+                lstDbObject.add(pivot);
 
                 /******************/
                 //getChildren
-                BasicDBObject query2 = new BasicDBObject("path", Pattern.compile("^,"+pivote.get("_id").toString()+","));
-                query2.append("pathThingType",Pattern.compile("^"+pivote.get("thingTypeCode")) );
-                //pivoteData2 = db.getCollection("path_things").find().sort(query2);
-                pivoteData2 = db.getCollection("path_things").find(query2);
+                BasicDBObject query2 = new BasicDBObject("path", Pattern.compile("^,"+pivot.get("_id").toString()+","));
+                query2.append("pathThingType",Pattern.compile("^"+pivot.get("thingTypeCode")) );
+                pivotData2 = MongoDAOUtil.getInstance().getCollection("path_things").find(query2);
             }
 
             BasicDBList lstDBObjectChild = new BasicDBList();
-            while( pivoteData2.hasNext() )
+            while( pivotData2.hasNext() )
             {
-                DBObject record = pivoteData2.next();
+                DBObject record = pivotData2.next();
                 lstDBObjectChild.add(record);
             }
             if(lstDBObjectChild!=null && lstDBObjectChild.size()>0)
             {
                 lstDbObject.addAll(lstDBObjectChild);
             }
-
-            final long endTime = System.currentTimeMillis();
-            long total1 = endTime-startTime;
-            System.out.println("Total Execution Parent & Pivote (miliseconds): "+total1);
-
-            final long startTimeChildren = System.currentTimeMillis();
             String path = ((BasicDBObject)lstDbObject.get(0)).get("path")!=null?((BasicDBObject)lstDbObject.get(0)).get("path").toString():null;
-            BasicDBList mapChildren = getTreeList(lstDbObject, path);
-
-            Object resultData = null;
-            //if(mapChildren!=null && mapChildren.size()>0)
+            BasicDBList basicTreeList = getTreeList(lstDbObject, path);
             if(lstDBObjectChild!=null && lstDBObjectChild.size()>0)
             {
-//                BasicDBObject pivoteCopy =  getPivoteCopy(pivote);
-//                pivoteCopy.append("children",mapChildren);
-//                resultData = pivoteCopy;
-                resultData = mapChildren;
-            }else
+                resultData = basicTreeList;
+            }
+            else
             {
                 resultData = lstDbObject.get(0);
             }
-            final long endTimeChildren = System.currentTimeMillis();
-            long total2 = endTimeChildren-startTimeChildren;
-            System.out.println("Total Execution Children (miliseconds): "+total2);
-            long totalMiliseconds = (total1+total2);
-
-
-            int proyeccion = 1000000;
-            int totalMinutes = (int) (((totalMiliseconds*proyeccion)/ (1000*60)) % 60);
-            System.out.println("TOTAL (miliseconds): "+ totalMiliseconds);
-//            System.out.println("TOTAL (minutes)    : "+ totalMinutes);
-//            System.out.println("TOTAL Proyeccion hasta "+proyeccion+" things: "+(totalMinutes*proyeccion));
-
             result.add(resultData);
-//            System.out.println(mapChildren);
+
+//            long endTimeOne = System.currentTimeMillis();
+//            long total1 = endTimeOne-startTimeOne;
+//            System.out.println("Iteration ["+pivot.get("serialNumber")+"] :"+total1);
+
         }
+
+        final long endTime = System.currentTimeMillis();
+        final long totalTime = endTime-startTime;
         System.out.println(result);
+        System.out.println("TOTAL TIME (milliseconds): "+(totalTime));
     }
 
 
@@ -142,77 +250,33 @@ public class DbMaterializedPathTest {
 
         return response;
     }
-//    //paths
-//    public static void pathMongoReloaded(DB db) {
-//        //get father
-//        final long startTime = System.currentTimeMillis();
-////        BasicDBObject query = new BasicDBObject("serialNumber", "P10000");
-//        BasicDBObject query = new BasicDBObject("serialNumber", "DATA1000");
-////        BasicDBObject query = new BasicDBObject("serialNumber", "BOX1000");
-//        DBObject pivote = db.getCollection("path_things").findOne(query);
-//        String pathPivote = pivote.get("path")!=null?pivote.get("path").toString():null;
-//
-//        BasicDBList lstDbObject = new BasicDBList();
-//        DBCursor pivoteData2 = null;
-//        if(pathPivote!=null)
-//        {
-//            /********************/
-//            //getFather
-//            lstDbObject = getFather( pathPivote, db);
-//
-//            /*******************/
-//            //get pivote
-//            lstDbObject.add(pivote);
-//
-//            /******************/
-//            //getChildren
-//            BasicDBObject query2 = new BasicDBObject("path", Pattern.compile(","+pathPivote+","+pivote.get("_id")+","));
-//            pivoteData2 = db.getCollection("path_things").find(query2);
-//        }else
-//        {
-//            BasicDBObject query2 = new BasicDBObject("path", 1);
-//            pivoteData2 = db.getCollection("path_things").find().sort(query2);
-//        }
-//
-//        while( pivoteData2.hasNext() )
-//        {
-//            DBObject record = pivoteData2.next();
-//            lstDbObject.add(record);
-//        }
-//
-//        final long endTime = System.currentTimeMillis();
-//        long total1 = endTime-startTime;
-//        System.out.println("Total Execution Parent & Pivote (miliseconds): "+total1);
-//
-//        final long startTimeChildren = System.currentTimeMillis();
-//        String path = ((BasicDBObject)lstDbObject.get(0)).get("path")!=null?((BasicDBObject)lstDbObject.get(0)).get("path").toString():null;
-//        BasicDBList mapChildren = getTreeList(lstDbObject, path);
-//        final long endTimeChildren = System.currentTimeMillis();
-//        long total2 = endTimeChildren-startTimeChildren;
-//        System.out.println("Total Execution Children (miliseconds): "+total2);
-//        long totalMiliseconds = (total1+total2);
-//
-//
-//        int proyeccion = 1000000;
-//        int totalMinutes = (int) (((totalMiliseconds*proyeccion)/ (1000*60)) % 60);
-//        System.out.println("TOTAL (miliseconds): "+ totalMiliseconds);
-//        System.out.println("TOTAL (minutes)    : "+ totalMinutes);
-//        System.out.println("TOTAL Proyeccion hasta 1000 (minutes): "+(totalMinutes));
-//        System.out.println(mapChildren);
-//    }
 
     /*Get Parents*/
-    public static BasicDBList getFather(String path, DB db)
+    public static BasicDBList getFather(String path)
     {
         BasicDBList result = new BasicDBList();
         if(path!=null)
         {
+//            path = path.substring(1,path.length()-1);
+//            String[] data = path.split(",");
+//            Integer[] dataInt = new Integer[data.length];
+//            for (int i = 0; i < data.length; i++) {
+//                dataInt[i] = Integer.parseInt(data[i]);
+//            }
+//
+//            BasicDBObject query    = new BasicDBObject("_id", new BasicDBObject("$in", Arrays.asList(dataInt) ));
+//            DBCursor dbObjectCursor= db.getCollection("path_things").find(query);
+//            while( dbObjectCursor.hasNext() )
+//            {
+//                result.add(dbObjectCursor.next());
+//            }
+
             path = path.substring(1,path.length()-1);
             String[] data = path.split(",");
             for(int i =0;i<data.length;i++)
             {
                 BasicDBObject query = new BasicDBObject("_id", Integer.parseInt(data[i]));
-                DBObject dbObject= db.getCollection("path_things").findOne(query);
+                DBObject dbObject= MongoDAOUtil.getInstance().getCollection("path_things").findOne(query);
                 result.add(dbObject);
             }
         }
@@ -257,4 +321,17 @@ public class DbMaterializedPathTest {
         return result;
     }
 
+    public static void createNewThing()
+    {
+
+    }
+
+    public static void init(){
+        try {
+            MongoDAOUtil.setupMongodb("localhost",27017, "riot_main", null , null, "admin", "control123!");
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+    }
 }
