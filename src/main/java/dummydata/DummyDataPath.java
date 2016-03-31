@@ -12,7 +12,7 @@ import java.util.Map;
  * Created by rsejas on 3/31/16.
  */
 public class DummyDataPath {
-    private static int MAX_THINGS = 10;
+    private static int MAX_THINGS = 20;
     private static int MAX_LEVELS = 6;
     private static String COLLECTION_NAME = "path_things";
     private static String[] THING_TYPE_CODES = {
@@ -90,7 +90,8 @@ public class DummyDataPath {
 
     private static Boolean initMongo() {
         try {
-            MongoDAOUtil.setupMongodb("localhost", 27017, "riot_main", null , null, "admin", "control123!");
+//            MongoDAOUtil.setupMongodb("localhost", 27017, "riot_main", null , null, "admin", "control123!");
+            MongoDAOUtil.setupMongodb("10.100.1.140",27017, "riot_main", null , null, "vizix", "m0j1xInc!");
             return true;
         } catch (Exception e) {
             e.printStackTrace();
