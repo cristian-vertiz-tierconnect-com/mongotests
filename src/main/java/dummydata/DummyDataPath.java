@@ -12,28 +12,28 @@ import java.util.*;
  * Created by rsejas on 3/31/16.
  */
 public class DummyDataPath {
-    private static int MAX_THINGS = 20;
-    private static int MAX_SNAPSHOT_PER_THING = 2;
+    private static int MAX_THINGS = 5;
+    private static int MAX_SNAPSHOT_PER_THING = 10;
     private static int MAX_LEVELS = 6;
     private static String COLLECTION_NAME = "path_things";
     private static String[] THING_TYPE_CODES = {
-            "pallete_code",
+/*            "pallete_code",
             "pallete_code,default_rfid_thingtype",
 //            "pallete_code,cartoon_code",
             "pallete_code,cartoon_code,default_rfid_thingtype",
 //            "pallete_code,cartoon_code,box_code",
             "pallete_code,cartoon_code,box_code,default_rfid_thingtype",
-//            "pallete_code,cartoon_code,box_code,item_code",
+//            "pallete_code,cartoon_code,box_code,item_code",*/
             "pallete_code,cartoon_code,box_code,item_code,default_rfid_thingtype",
     };
     private static String[] THING_TYPE_NAMES = {
-            "pallete",
+          /*  "pallete",
             "pallete,default_rfid_thingtype",
 //            "pallete,cartoon",
             "pallete,cartoon,default_rfid_thingtype",
 //            "pallete,cartoon,box",
             "pallete,cartoon,box,default_rfid_thingtype",
-//            "pallete,cartoon,box,item",
+//            "pallete,cartoon,box,item",*/
             "pallete,cartoon,box,item,default_rfid_thingtype",
     };
 
@@ -81,6 +81,11 @@ public class DummyDataPath {
                 MongoDAOUtil.getInstance().getCollection(COLLECTION_NAME).save(thingObject);
                 //Create Snapshot
                 createSnapshot(thingObject);
+                if(id>=MAX_THINGS)
+                {
+                    i=MAX_THINGS+1;
+                    break;
+                }
             }
         }
     }
@@ -130,7 +135,7 @@ public class DummyDataPath {
     private static Boolean initMongo() {
         try {
             MongoDAOUtil.setupMongodb("localhost", 27017, "riot_main", null , null, "admin", "control123!");
-//            MongoDAOUtil.setupMongodb("10.100.1.140",27017, "riot_main", null , null, "vizix", "m0j1xInc!");
+//            MongoDAOUtil.setupMongodb("10.100.0.140",27017, "riot_main", null , null, "admin", "control123!");
             return true;
         } catch (Exception e) {
             e.printStackTrace();

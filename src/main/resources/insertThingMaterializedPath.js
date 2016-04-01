@@ -297,3 +297,6 @@ db.getCollection('path_things').find(
     }
     ,{serialNumber:true,"color":true,_id:false}).count();
 
+db.getCollection('path_things').drop();
+db.getCollection('path_thingSnapshotIds').drop();
+db.getCollection('path_thingSnapshots').drop();
