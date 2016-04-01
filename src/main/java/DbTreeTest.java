@@ -84,8 +84,7 @@ public class DbTreeTest {
         System.out.println(result);
     }
 
-
-    public static void getThingsBySerial(String serialNumber,Boolean treeView){
+    public static void getThingsBySerial(String serialNumber,boolean treeView){
         List<DBObject> result = new ArrayList<>();
         BasicDBObject query = new BasicDBObject();
         BasicDBList orDB = new BasicDBList();
@@ -96,7 +95,7 @@ public class DbTreeTest {
         query.append("$or", orDB);
         DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find(query);
         while (cursor.hasNext()){
-            if (treeView == Boolean.TRUE){
+            if (treeView){
                 result.add(cursor.next());
             } else {
                 DBObject dbObject = cursor.next();
@@ -115,6 +114,45 @@ public class DbTreeTest {
                     } else {
                         String sn = (String) ((BasicDBObject)thing).get("serialNumber");
                         if (sn != null && !StringUtils.isEmpty(sn) && StringUtils.contains(sn,serialNumber)){
+                            result.add(removeChildren((BasicDBObject)thing));
+                        }
+                    }
+                }
+            }
+        }
+        System.out.println(result);
+    }
+
+    public static void getThingsByThingType(long thingTypeId,String field,boolean treeView){
+        List<DBObject> result = new ArrayList<>();
+        BasicDBObject query = new BasicDBObject();
+        BasicDBList orDB = new BasicDBList();
+        for (String thingPath : getPaths()){
+            DBObject orQuery = new BasicDBObject(thingPath + "." + field,thingTypeId);
+            orDB.add(orQuery);
+        }
+        query.append("$or", orDB);
+        DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find(query);
+        while (cursor.hasNext()){
+            if (treeView){
+                result.add(cursor.next());
+            } else {
+                DBObject dbObject = cursor.next();
+                long serial = (long) dbObject.get(field);
+                if (serial==thingTypeId) {
+                    result.add(removeChildren(dbObject));
+                }
+                for (String expression : getPaths()){
+                    Object thing = null;
+                    thing = getFormulaValue(null,dbObject,"${" + expression + "}");
+                    if (thing instanceof BasicDBList){
+                        for(int i = 0; i < ((BasicDBList)thing).size(); i++)
+                            if( (long)((BasicDBObject)((BasicDBList)thing).get(i)).get(field) == thingTypeId ){
+                                result.add(removeChildren(((BasicDBObject)((BasicDBList)thing).get(i))));
+                            }
+                    } else {
+                        long sn = (long) ((BasicDBObject)thing).get(field);
+                        if (sn==thingTypeId){
                             result.add(removeChildren((BasicDBObject)thing));
                         }
                     }
@@ -149,22 +187,41 @@ public class DbTreeTest {
         return result;
     }
 
+    public static void createThing(){
+
+    }
+
     public static void main(String [] args){
         init();
-        String serialNumber = "0";
+        String serialNumber = "RFID04";
+        long thingTypeId = 3;
         String thingPath = getThingPath(serialNumber);
 
-//        test get all things
+        // test get all things
 //        getAllThingsTreeView();
 
-//        test get thing by serial in tree view
+        // test get thing by serial in tree view
 //        getThingBySerial(serialNumber,thingPath,true);
 
-//        test get thing by serial no tree view
+        // test get thing by serial no tree view
 //        getThingBySerial(serialNumber,thingPath,false);
 
-//        test get things by serial in tree view (like clause)
-        getThingsBySerial(serialNumber,false);
+        // test get things by serial in tree view (like clause)
+//        getThingsBySerial(serialNumber,true);
+
+        // test get things by serial in tree view (like clause)
+//        getThingsBySerial(serialNumber,false);
+
+        // test get things by serial in tree view (like clause)
+//        getThingsByThingType(thingTypeId,"thingTypeId",true);
+
+        // test get things by serial no tree view (like clause)
+        getThingsByThingType(thingTypeId,"thingTypeId",false);
+
+        // create a thing
+//        createThing();
+
+
     }
 
 }

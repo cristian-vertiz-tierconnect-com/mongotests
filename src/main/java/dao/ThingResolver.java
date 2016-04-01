@@ -1,5 +1,6 @@
 package dao;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 
 import javax.el.*;
@@ -36,6 +37,8 @@ public class ThingResolver extends ELResolver {
         } else {
             if (base instanceof Map || base instanceof BasicDBObject){
                 value = new MapELResolver().getValue(context, base, property);
+            } else if (base instanceof BasicDBList){
+                value = new ListELResolver().getValue(context, base, property);
             } else {
                 value = new BeanELResolver().getValue(context, base, property);
             }
