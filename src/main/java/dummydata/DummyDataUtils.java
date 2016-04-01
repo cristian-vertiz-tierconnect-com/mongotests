@@ -25,22 +25,16 @@ public class DummyDataUtils {
         return result;
     }
 
-    public Map<String, Object> newThingTree(Long id, String prefix) {
-        Map<String, Object> result = new HashMap<>();
+    public BasicDBObject newThingTree(Long id, String prefix, String path) {
+        BasicDBObject result = new BasicDBObject();
         result.put("_id", id);
         result.put("name", prefix+String.format("%010d", Integer.parseInt(id.toString())));
         result.put("serialNumber", prefix+String.format("%010d", Integer.parseInt(id.toString())));
         result.put("color", getRandomValueFrom(colorsList));
         result.put("size", getRandomValueFrom(sizeList));
         result.put("groupTypeId",id);
-        result.put("groupTypeName","groupTypeName"+id);
-        result.put("groupTypeCode","groupTypeCode"+id);
         result.put("groupId",id);
-        result.put("groupCode","groupCode"+id);
-        result.put("groupName","groupName"+id);
-        result.put("thingTypeId",id);
-        result.put("thingTypeCode","thingTypeCode"+id);
-        result.put("thingTypeName","thingTypeName"+id);
+        result.put("path", path);
         return result;
     }
 
