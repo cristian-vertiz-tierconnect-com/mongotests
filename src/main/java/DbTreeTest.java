@@ -24,16 +24,16 @@ public class DbTreeTest {
 
     public static String getThingPath(String serialNumber){
         Map<String,Object> paths = new HashMap<>();
-        paths.put("PALLETE01",".");
-        paths.put("RFID00","rfid.");
-        paths.put("CARTON01","carton.");
-        paths.put("RFID01","carton.rfid.");
-        paths.put("RFID02","carton.rfid.");
-        paths.put("BOX01","carton.box.");
-        paths.put("RFID03","carton.box.rfid.");
-        paths.put("ITEM01","carton.box.item.");
-        paths.put("RFID04","carton.box.item.rfid.");
-        paths.put("RFID05","carton.box.item.rfid.");
+        paths.put("PALLETE01","");
+        paths.put("RFID00","rfid[0]");
+        paths.put("CARTON01","carton[0]");
+        paths.put("RFID01","carton[0].rfid[0]");
+        paths.put("RFID02","carton[0].rfid[1]");
+        paths.put("BOX01","carton[0].box[0]");
+        paths.put("RFID03","carton[0].box[0].rfid[0]");
+        paths.put("ITEM01","carton[0].box[0].item[0]");
+        paths.put("RFID04","carton[0].box[0].item[0].rfid[0]");
+        paths.put("RFID05","carton[0].box[0].item[0].rfid[1]");
         return (String) paths.get(serialNumber);
     }
 
@@ -63,65 +63,65 @@ public class DbTreeTest {
         if (thingPath == null){
             return;
         }
-        String expression = "${" + StringUtils.substring(thingPath,0,thingPath.length()-1) + "}";
-        DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find(new BasicDBObject(thingPath + "serialNumber", serialNumber));
+        String thingRelativePath = getThingRelativePath(thingPath);
+        DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find(new BasicDBObject(thingRelativePath + "serialNumber", serialNumber));
         while (cursor.hasNext()){
             if (treeView == Boolean.TRUE){
                 result.add(cursor.next());
             } else {
-                Object thing;
-                thing = getFormulaValue(null,cursor.next(),expression);
-                if (thing instanceof BasicDBList){
-                    for(int i = 0; i < ((BasicDBList)thing).size(); i++)
-                        if( ((BasicDBObject)((BasicDBList)thing).get(i)).get("serialNumber").equals(serialNumber) ){
-                            result.add(removeChildren(((BasicDBObject)((BasicDBList)thing).get(i))));
-                        }
+                if (StringUtils.isEmpty(thingPath)){
+                    result.add(removeChildren(cursor.next()));
                 } else {
-                    result.add(removeChildren((BasicDBObject)thing));
-                }
-            }
-        }
-        System.out.println(result);
-    }
-
-    public static void getThingsBySerial(String serialNumber,boolean treeView){
-        List<DBObject> result = new ArrayList<>();
-        BasicDBObject query = new BasicDBObject();
-        BasicDBList orDB = new BasicDBList();
-        for (String thingPath : getPaths()){
-            DBObject orQuery = new BasicDBObject(thingPath + ".serialNumber",new BasicDBObject("$regex", java.util.regex.Pattern.compile(serialNumber)).append("$options", "i"));
-            orDB.add(orQuery);
-        }
-        query.append("$or", orDB);
-        DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find(query);
-        while (cursor.hasNext()){
-            if (treeView){
-                result.add(cursor.next());
-            } else {
-                DBObject dbObject = cursor.next();
-                String serial = (String) dbObject.get("serialNumber");
-                if (serial != null && !StringUtils.isEmpty(serial) && StringUtils.contains(serial,serialNumber)) {
-                    result.add(removeChildren(dbObject));
-                }
-                for (String expression : getPaths()){
-                    Object thing = null;
-                    thing = getFormulaValue(null,dbObject,"${" + expression + "}");
-                    if (thing instanceof BasicDBList){
-                        for(int i = 0; i < ((BasicDBList)thing).size(); i++)
-                            if( StringUtils.contains((String)((BasicDBObject)((BasicDBList)thing).get(i)).get("serialNumber"),serialNumber) ){
-                                result.add(removeChildren(((BasicDBObject)((BasicDBList)thing).get(i))));
-                            }
-                    } else {
-                        String sn = (String) ((BasicDBObject)thing).get("serialNumber");
-                        if (sn != null && !StringUtils.isEmpty(sn) && StringUtils.contains(sn,serialNumber)){
-                            result.add(removeChildren((BasicDBObject)thing));
-                        }
+                    String expression = "${" + thingPath + "}";
+                    Object thing;
+                    thing = getFormulaValue(null,cursor.next(),expression);
+                    if (thing instanceof BasicDBObject){
+                        result.add(removeChildren((BasicDBObject)thing));
                     }
                 }
             }
         }
         System.out.println(result);
     }
+
+//    public static void getThingsBySerial(String serialNumber,boolean treeView){
+//        List<DBObject> result = new ArrayList<>();
+//        BasicDBObject query = new BasicDBObject();
+//        BasicDBList orDB = new BasicDBList();
+//        for (String thingPath : getPaths()){
+//            DBObject orQuery = new BasicDBObject(thingPath + ".serialNumber",new BasicDBObject("$regex", java.util.regex.Pattern.compile(serialNumber)).append("$options", "i"));
+//            orDB.add(orQuery);
+//        }
+//        query.append("$or", orDB);
+//        DBCursor cursor = MongoDAOUtil.getInstance().getCollection("tree_things").find(query);
+//        while (cursor.hasNext()){
+//            if (treeView){
+//                result.add(cursor.next());
+//            } else {
+//                DBObject dbObject = cursor.next();
+//                String serial = (String) dbObject.get("serialNumber");
+//                if (serial != null && !StringUtils.isEmpty(serial) && StringUtils.contains(serial,serialNumber)) {
+//                    result.add(removeChildren(dbObject));
+//                }
+//                for (String expression : getPaths()){
+//                    Object thing = null;
+//                    thing = getFormulaValue(null,dbObject,"${" + expression + "}");
+//                    if (thing instanceof BasicDBList){
+//                        for(int i = 0; i < ((BasicDBList)thing).size(); i++)
+//                            if( StringUtils.contains((String)((BasicDBObject)((BasicDBList)thing).get(i)).get("serialNumber"),serialNumber) ){
+//                                result.add(removeChildren(((BasicDBObject)((BasicDBList)thing).get(i))));
+//                            }
+//                    } else {
+//                        String sn = (String) ((BasicDBObject)thing).get("serialNumber");
+//                        if (sn != null && !StringUtils.isEmpty(sn) && StringUtils.contains(sn,serialNumber)){
+//                            result.add(removeChildren((BasicDBObject)thing));
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        System.out.println(result);
+//    }
 
     public static void getThingsByThingType(long thingTypeId,String field,boolean treeView){
         List<DBObject> result = new ArrayList<>();
@@ -143,17 +143,13 @@ public class DbTreeTest {
                     result.add(removeChildren(dbObject));
                 }
                 for (String expression : getPaths()){
-                    Object thing = null;
+                    Object thing;
                     thing = getFormulaValue(null,dbObject,"${" + expression + "}");
                     if (thing instanceof BasicDBList){
-                        for(int i = 0; i < ((BasicDBList)thing).size(); i++)
-                            if( (long)((BasicDBObject)((BasicDBList)thing).get(i)).get(field) == thingTypeId ){
-                                result.add(removeChildren(((BasicDBObject)((BasicDBList)thing).get(i))));
+                        for(int i = 0; i < ((BasicDBList)thing).size(); i++) {
+                            if (((Long) ((BasicDBObject) ((BasicDBList) thing).get(i)).get(field)).compareTo(Long.valueOf(thingTypeId)) == 0) {
+                                result.add(removeChildren(((BasicDBObject) ((BasicDBList) thing).get(i))));
                             }
-                    } else {
-                        long sn = (long) ((BasicDBObject)thing).get(field);
-                        if (sn==thingTypeId){
-                            result.add(removeChildren((BasicDBObject)thing));
                         }
                     }
                 }
@@ -175,12 +171,7 @@ public class DbTreeTest {
 
         BasicDBObject result = new BasicDBObject();
         for (Map.Entry<String, Object> property : thingAsMap.entrySet()){
-            if (property.getValue() instanceof BasicDBObject){
-                if (!((BasicDBObject)property.getValue()).get("isChild").equals("true")){
-                    result.append(property.getKey(), property.getValue());
-                }
-            } else if (property.getValue() instanceof BasicDBList){
-            } else {
+            if (!(property.getValue() instanceof BasicDBList)) {
                 result.append(property.getKey(), property.getValue());
             }
         }
@@ -191,9 +182,20 @@ public class DbTreeTest {
 
     }
 
+    public static String getThingRelativePath(String thingPath){
+        String result;
+        String[] searchStrings = {"[0]","[1]","[2]"};
+        String[] replacementStrings = {"","",""};
+        result = StringUtils.replaceEach(thingPath,searchStrings,replacementStrings);
+        if (!StringUtils.isEmpty(result)){
+            result += ".";
+        }
+        return  result;
+    }
+
     public static void main(String [] args){
         init();
-        String serialNumber = "RFID04";
+        String serialNumber = "RFID05";
         long thingTypeId = 3;
         String thingPath = getThingPath(serialNumber);
 
@@ -212,16 +214,14 @@ public class DbTreeTest {
         // test get things by serial in tree view (like clause)
 //        getThingsBySerial(serialNumber,false);
 
-        // test get things by serial in tree view (like clause)
-//        getThingsByThingType(thingTypeId,"thingTypeId",true);
-
-        // test get things by serial no tree view (like clause)
-        getThingsByThingType(thingTypeId,"thingTypeId",false);
-
         // create a thing
 //        createThing();
 
+        // get thing if everything is array
+        getThingBySerial(serialNumber, thingPath, false);
 
+        // test get things by serial in tree view (like clause)
+//        getThingsByThingType(thingTypeId, "thingTypeId", false);
     }
 
 }
