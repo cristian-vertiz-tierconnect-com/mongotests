@@ -12,8 +12,8 @@ import java.util.*;
  * Created by rsejas on 3/31/16.
  */
 public class DummyDataPath {
-    private static int MAX_THINGS = 5;
-    private static int MAX_SNAPSHOT_PER_THING = 10;
+    private static int MAX_THINGS = 10000;
+    private static int MAX_SNAPSHOT_PER_THING = 500;
     private static int MAX_LEVELS = 6;
     private static String COLLECTION_NAME = "path_things";
     private static String[] THING_TYPE_CODES = {
@@ -134,8 +134,8 @@ public class DummyDataPath {
 
     private static Boolean initMongo() {
         try {
-            MongoDAOUtil.setupMongodb("localhost", 27017, "riot_main", null , null, "admin", "control123!");
-//            MongoDAOUtil.setupMongodb("10.100.0.140",27017, "riot_main", null , null, "admin", "control123!");
+//            MongoDAOUtil.setupMongodb("localhost", 27017, "path_riot_main", null , null, "admin", "control123!");
+            MongoDAOUtil.setupMongodb("10.100.0.140",27017, "path_riot_main", null , null, "admin", "control123!");
             return true;
         } catch (Exception e) {
             e.printStackTrace();
