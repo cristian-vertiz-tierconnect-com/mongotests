@@ -134,8 +134,8 @@ public class DummyDataPath {
 
     private static Boolean initMongo() {
         try {
-//            MongoDAOUtil.setupMongodb("localhost", 27017, "path_riot_main", null , null, "admin", "control123!");
-            MongoDAOUtil.setupMongodb("10.100.0.140",27017, "path_riot_main", null , null, "admin", "control123!");
+            MongoDAOUtil.setupMongodb("localhost", 27017, "path_riot_main", null , null, "admin", "control123!");
+//            MongoDAOUtil.setupMongodb("10.100.0.140",27017, "path_riot_main", null , null, "admin", "control123!");
             return true;
         } catch (Exception e) {
             e.printStackTrace();
