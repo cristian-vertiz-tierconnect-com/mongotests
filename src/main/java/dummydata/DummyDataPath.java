@@ -38,10 +38,15 @@ public class DummyDataPath {
     };
 
     public static void main(String[] args) {
+        final long startTime = System.currentTimeMillis();
         Boolean mongoInitialized = initMongo();
         if (mongoInitialized) {
             fillDummyData();
         }
+        final long endTime = System.currentTimeMillis();
+        final long total = endTime-startTime;
+        System.out.println("THINGS CREATED: "+MAX_THINGS);
+        System.out.println("TIME: "+total);
     }
 
     private static void fillDummyData() {
@@ -49,12 +54,12 @@ public class DummyDataPath {
         DummyDataUtils dummyDataUtils = new DummyDataUtils();
         Long id = 0L;
         // N things
-        System.out.println(thingTypeList);
+        //System.out.println(thingTypeList);
         for (int i = 0; i < MAX_THINGS; i++) {
             int level = (int)(Math.random()*thingTypeList.size());
             String[] levels = thingTypeList.get(level).get("thingType").toString().split(",");
             String[] levelsCodes = thingTypeList.get(level).get("thingTypeCode").toString().split(",");
-            System.out.println(levels[0]);
+            //System.out.println(levels[0]);
             String pathThingType = "";
             String path = ",";
             for (int k = 0; k < levels.length; k++) {
@@ -87,9 +92,16 @@ public class DummyDataPath {
         {
             Date date = new Date();
             BasicDBObject snapshot = new BasicDBObject();
+
+            if(i>0)
+            {
+                thingObject.put("color", DummyDataUtils.getRandomValueFrom(DummyDataUtils.colorsList));
+                thingObject.put("size", DummyDataUtils.getRandomValueFrom(DummyDataUtils.sizeList));
+            }
+
             snapshot.put("value",thingObject);
             snapshot.put("time",date);
-            MongoDAOUtil.getInstance().getCollection("thingSnapshotsPath").save(snapshot);
+            MongoDAOUtil.getInstance().getCollection("path_thingSnapshots").save(snapshot);
             ObjectId objId = (ObjectId)snapshot.get( "_id" );
 
             BasicDBObject blink = new BasicDBObject();
@@ -98,11 +110,10 @@ public class DummyDataPath {
             blinks.add(blink);
         }
 
-
         BasicDBObject snapshotId = new BasicDBObject();
         snapshotId.put("_id",thingObject.get("_id"));
         snapshotId.put("blinks",blinks);
-        MongoDAOUtil.getInstance().getCollection("thingSnapshotIdsPath").save(snapshotId);
+        MongoDAOUtil.getInstance().getCollection("path_thingSnapshotIds").save(snapshotId);
     }
 
     private static List<Map<String, Object>> fillThingTypeList() {

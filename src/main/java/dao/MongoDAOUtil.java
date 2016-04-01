@@ -4,6 +4,7 @@ import com.mongodb.*;
 
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.List;
 
 public class MongoDAOUtil {
 
@@ -52,6 +53,8 @@ public class MongoDAOUtil {
         }
         instance.mongoClient = mongoClient;
         DB db = mongoClient.getDB(mongoDatabase);
+//        Mongo mongo = new Mongo("localhost", 27017);
+//        DB db = mongo.getDB(mongoDatabase);
         instance.db = db;
 
     }

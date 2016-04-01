@@ -12,8 +12,8 @@ import java.util.Map;
 public class DummyDataUtils {
     public String prefixName = "Thing";
     public String prefixSerialNumber = "ThingSerial";
-    public String[] colorsList = {"White", "Gray", "Pink", "Red", "Brown", "Orange", "Yellow", "Green", "Cyan", "Blue", "Violet", "Navy"};
-    public String[] sizeList = {"Small", "Medium", "Large"};
+    public static String[] colorsList = {"White", "Gray", "Pink", "Red", "Brown", "Orange", "Yellow", "Green", "Cyan", "Blue", "Violet", "Navy"};
+    public static String[] sizeList = {"Small", "Medium", "Large"};
 
     public Map<String, Object> newThing(Long id) {
         Map<String, Object> result = new HashMap<>();
@@ -44,7 +44,7 @@ public class DummyDataUtils {
         return result;
     }
 
-    public Object getRandomValueFrom(String[] list) {
+    public static Object getRandomValueFrom(String[] list) {
         Map<String, Object> object = new HashMap<>();
         object.put("value", list[(int)(Math.random()*list.length)]);
         object.put("thingTypeFieldId", Long.valueOf(String.valueOf((int)(Math.random()*100))));

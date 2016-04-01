@@ -48,17 +48,6 @@ public class DbMaterializedPathTest {
         System.out.println("*******TREE DATA");
         String serial = "P10000";//P10000 CARTOON1000 RFID1002 BOX1000 ITEM1000 RFID1003  DATA1000-17
         lstThingListTree(serial, null);
-//        System.out.println();
-//        serial = "ITEM1000";
-//        lstThingListTree(serial, null);
-//        System.out.println();
-//        serial = "RFID1003";
-//        lstThingListTree(serial, null);
-//        System.out.println();
-//        serial = "DATA22";
-//        lstThingListTree(serial, null);
-//        System.out.println();
-//        lstThingListTree(null, null);
     }
 
     public static void getPlainExamples()
