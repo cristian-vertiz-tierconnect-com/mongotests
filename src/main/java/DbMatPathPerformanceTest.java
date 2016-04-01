@@ -13,7 +13,7 @@ public class DbMatPathPerformanceTest {
     public static int MAX_THINGS = 27;
     public static void init(){
         try {
-            MongoDAOUtil.setupMongodb("localhost",27017, "riot_main", null , null, "admin", "control123!");
+            MongoDAOUtil.setupMongodb("localhost",27017, "path_riot_main", null , null, "admin", "control123!");
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }

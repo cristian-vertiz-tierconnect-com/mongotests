@@ -2,7 +2,6 @@ package dummydata;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
-import com.mongodb.WriteResult;
 import dao.MongoDAOUtil;
 import org.bson.types.ObjectId;
 
@@ -13,7 +12,8 @@ import java.util.*;
  */
 public class DummyDataPath {
     private static int MAX_THINGS = 10000;
-    private static int MAX_SNAPSHOT_PER_THING = 500;
+    private static int MAX_BLINKS_PER_THING = 500;
+    private static int START_THING_ID = 22;//0
     private static int MAX_LEVELS = 6;
     private static String COLLECTION_NAME = "path_things";
     private static String[] THING_TYPE_CODES = {
@@ -52,7 +52,7 @@ public class DummyDataPath {
     private static void fillDummyData() {
         List<Map<String, Object>> thingTypeList = fillThingTypeList();
         DummyDataUtils dummyDataUtils = new DummyDataUtils();
-        Long id = 0L;
+        Long id = Long.parseLong(START_THING_ID+"");
         // N things
         //System.out.println(thingTypeList);
         for (int i = 0; i < MAX_THINGS; i++) {
@@ -81,7 +81,8 @@ public class DummyDataPath {
                 MongoDAOUtil.getInstance().getCollection(COLLECTION_NAME).save(thingObject);
                 //Create Snapshot
                 createSnapshot(thingObject);
-                if(id>=MAX_THINGS)
+                int total = MAX_THINGS + START_THING_ID;
+                if(id>=total)
                 {
                     i=MAX_THINGS+1;
                     break;
@@ -93,7 +94,7 @@ public class DummyDataPath {
     public static void createSnapshot(BasicDBObject thingObject)
     {
         BasicDBList blinks = new BasicDBList();
-        for(int i=0;i<MAX_SNAPSHOT_PER_THING;i++)
+        for(int i = 0; i< MAX_BLINKS_PER_THING; i++)
         {
             Date date = new Date();
             BasicDBObject snapshot = new BasicDBObject();

@@ -235,15 +235,15 @@ db.getCollection('path_things').insert({_id:NumberLong(21),thingTypeCode:"defaul
 //All Tree
 db.getCollection('path_things').find().sort( { path: 1 }  );
 //Just one branch
-db.getCollection('path_things').find({path: /^1/});
+db.getCollection('path_things').find({path: /^,1,/});
 //Just one subranch
-db.getCollection('path_things').find({path: /^1,3/}, {_id:true,"serialNumber":true, "path":true});
+db.getCollection('path_things').find({path: /^,1,3,/}, {_id:true,"serialNumber":true, "path":true});
 
 
 //How to search a thing by serialNumber
 db.getCollection('path_things').find({serialNumber:"BOX1000"}, {_id:true,"serialNumber":true, "path":true});
 db.getCollection('path_things').find({_id: {$in:[1,3]}}, {_id:true,"serialNumber":true, "path":true});
-db.getCollection('path_things').find({path: /^1,3,5/}, {_id:true,"serialNumber":true, "path":true});
+db.getCollection('path_things').find({path: /^,1,3,5,/}, {_id:true,"serialNumber":true, "path":true});
 
 //How to get a specific value (ELExpression)
 db.getCollection('path_things').findOne(
@@ -300,3 +300,17 @@ db.getCollection('path_things').find(
 db.getCollection('path_things').drop();
 db.getCollection('path_thingSnapshotIds').drop();
 db.getCollection('path_thingSnapshots').drop();
+
+
+db.getCollection('path_things').find().count();
+db.getCollection('path_thingSnapshotIds').find().count();
+db.getCollection('path_thingSnapshots').find().count();
+
+//Snapshot
+//QuerySnapshot
+
+db.getCollection('path_thingSnapshotIds').find(
+    { "blinks" : {"$elemMatch": { "time": { "$lte": 1459518142754 } } } },
+    { "blinks" : {"$elemMatch": { "time": { "$lte": 1459518142754 } } } }
+);
+db.getCollection('path_thingSnapshots').find({_id:ObjectId("56fe7abeba7e4e5453fd8a64")},{value:true});

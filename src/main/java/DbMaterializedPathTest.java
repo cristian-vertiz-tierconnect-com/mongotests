@@ -317,8 +317,8 @@ public class DbMaterializedPathTest {
 
     public static void init(){
         try {
-            //MongoDAOUtil.setupMongodb("localhost",27017, "riot_main", null , null, "admin", "control123!");
-            MongoDAOUtil.setupMongodb("10.100.1.140",27017, "riot_main", null , null, "vizix", "m0j1xInc!");
+            MongoDAOUtil.setupMongodb("localhost",27017, "path_riot_main", null , null, "admin", "control123!");
+//            MongoDAOUtil.setupMongodb("10.100.1.140",27017, "riot_main", null , null, "vizix", "m0j1xInc!");
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
