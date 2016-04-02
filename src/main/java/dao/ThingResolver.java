@@ -38,7 +38,13 @@ public class ThingResolver extends ELResolver {
             if (base instanceof Map || base instanceof BasicDBObject){
                 value = new MapELResolver().getValue(context, base, property);
             } else if (base instanceof BasicDBList){
-                value = new ListELResolver().getValue(context, base, property);
+                if (property instanceof String){
+                    for(int i = 0; i < ((BasicDBList)base).size(); i++){
+                        value = getValue(context,((BasicDBList)base).get(i),property);
+                    }
+                } else {
+                    value = new ListELResolver().getValue(context, base, property);
+                }
             } else {
                 value = new BeanELResolver().getValue(context, base, property);
             }

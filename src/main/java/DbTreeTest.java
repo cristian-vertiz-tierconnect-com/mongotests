@@ -34,6 +34,17 @@ public class DbTreeTest {
         paths.put("ITEM01","carton[0].box[0].item[0]");
         paths.put("RFID04","carton[0].box[0].item[0].rfid[0]");
         paths.put("RFID05","carton[0].box[0].item[0].rfid[1]");
+
+        paths.put("PALLETE10","");
+        paths.put("RFID10","rfid[0]");
+        paths.put("CARTON10","carton[0]");
+        paths.put("RFID11","carton[0].rfid[0]");
+        paths.put("RFID12","carton[0].rfid[1]");
+        paths.put("BOX010","carton[0].box[0]");
+        paths.put("RFID13","carton[0].box[0].rfid[0]");
+        paths.put("ITEM10","carton[0].box[0].item[0]");
+        paths.put("RFID14","carton[0].box[0].item[0].rfid[0]");
+        paths.put("RFID15","carton[0].box[0].item[0].rfid[1]");
         return (String) paths.get(serialNumber);
     }
 
@@ -138,8 +149,8 @@ public class DbTreeTest {
                 result.add(cursor.next());
             } else {
                 DBObject dbObject = cursor.next();
-                long serial = (long) dbObject.get(field);
-                if (serial==thingTypeId) {
+                long ttId = (long) dbObject.get(field);
+                if (ttId==thingTypeId) {
                     result.add(removeChildren(dbObject));
                 }
                 for (String expression : getPaths()){
@@ -151,7 +162,13 @@ public class DbTreeTest {
                                 result.add(removeChildren(((BasicDBObject) ((BasicDBList) thing).get(i))));
                             }
                         }
+                    } else {
+                        Long thingTId = (Long) ((BasicDBObject)thing).get(field);
+                        if (thingTId != null && thingTId.compareTo(Long.valueOf(thingTypeId)) == 0 ){
+                            result.add(removeChildren((BasicDBObject)thing));
+                        }
                     }
+
                 }
             }
         }
@@ -218,10 +235,10 @@ public class DbTreeTest {
 //        createThing();
 
         // get thing if everything is array
-        getThingBySerial(serialNumber, thingPath, false);
+ //       getThingBySerial(serialNumber, thingPath,false);
 
         // test get things by serial in tree view (like clause)
-//        getThingsByThingType(thingTypeId, "thingTypeId", false);
+       getThingsByThingType(thingTypeId, "thingTypeId",false);
     }
 
 }
