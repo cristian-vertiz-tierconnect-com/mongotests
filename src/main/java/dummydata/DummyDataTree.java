@@ -4,11 +4,9 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.sun.xml.internal.ws.util.StringUtils;
 import dao.MongoDAOUtil;
+import org.bson.types.ObjectId;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by rsejas on 3/31/16.
@@ -20,7 +18,10 @@ public class DummyDataTree {
     private static int MAX_THINGS = 100;
     private static int MAX_THINGS_BY_DOC = 5;
     private static int MAX_LEVELS = 6;
+    private static int MAX_BLINKS_PER_THING = 500;
     private static String COLLECTION_NAME = "dummy_data_tree";
+    private static String COLLECTION_SNAPSHOTS_IDS = "dummy_data_tree_snapshots_ids";
+    private static String COLLECTION_SNAPSHOTS = "dummy_data_tree_snapshots";
     private static String[] THING_TYPE_CODES = {
             "pallete_code",
             "pallete_code,rfid_code",
@@ -54,6 +55,8 @@ public class DummyDataTree {
     private static void fillDummyData() {
         if (INITIAL_ID == 1) {
             MongoDAOUtil.getInstance().getCollection(COLLECTION_NAME).drop();
+            MongoDAOUtil.getInstance().getCollection(COLLECTION_SNAPSHOTS_IDS).drop();
+            MongoDAOUtil.getInstance().getCollection(COLLECTION_SNAPSHOTS).drop();
         }
         List<Map<String, Object>> thingTypeList = fillThingTypeList();
         DummyDataUtils dummyDataUtils = new DummyDataUtils();
@@ -63,6 +66,8 @@ public class DummyDataTree {
             BasicDBObject doc = createThingDoc((int)(Math.random()*MAX_THINGS_BY_DOC+1));
             doc = removePathFrom(doc);
             MongoDAOUtil.getInstance().getCollection(COLLECTION_NAME).save(doc);
+            // Creating snapshots
+
         }
     }
 
@@ -79,7 +84,44 @@ public class DummyDataTree {
             }
         }
         thing.remove("path");
+        // Creating snapshots
+        createSnapshot(thing);
         return thing;
+    }
+
+    public static void createSnapshot(BasicDBObject thingObject)
+    {
+        BasicDBList blinks = new BasicDBList();
+        Date date = new Date();
+        Long delta = 100000*1000L;
+        Long timeMili = date.getTime() - (MAX_BLINKS_PER_THING+1)*delta;
+        for(int i = 0; i< MAX_BLINKS_PER_THING; i++)
+        {
+
+            BasicDBObject snapshot = new BasicDBObject();
+
+            if(i>0)
+            {
+                thingObject.put("color", DummyDataUtils.getRandomValueFrom(DummyDataUtils.colorsList));
+                thingObject.put("size", DummyDataUtils.getRandomValueFrom(DummyDataUtils.sizeList));
+            }
+
+            snapshot.put("value",thingObject);
+            snapshot.put("time",new Date(timeMili));
+            MongoDAOUtil.getInstance().getCollection(COLLECTION_SNAPSHOTS).save(snapshot);
+            ObjectId objId = (ObjectId)snapshot.get( "_id" );
+
+            BasicDBObject blink = new BasicDBObject();
+            blink.put("time", timeMili);
+            blink.put("blink_id", objId);
+            blinks.add(0,blink);
+            timeMili+=delta;
+        }
+
+        BasicDBObject snapshotId = new BasicDBObject();
+        snapshotId.put("_id",thingObject.get("_id"));
+        snapshotId.put("blinks",blinks);
+        MongoDAOUtil.getInstance().getCollection(COLLECTION_SNAPSHOTS_IDS).save(snapshotId);
     }
 
     private static BasicDBObject createThingDoc(int nThings) {
