@@ -26,15 +26,18 @@ public class DummyDataUtils {
     }
 
     public BasicDBObject newThingTree(Long id, String prefix, String path) {
+        String serialNumber = prefix+String.format("%010d", Integer.parseInt(id.toString()));
         BasicDBObject result = new BasicDBObject();
         result.put("_id", id);
-        result.put("name", prefix+String.format("%010d", Integer.parseInt(id.toString())));
+        result.put("name", serialNumber);
         result.put("serialNumber", prefix+String.format("%010d", Integer.parseInt(id.toString())));
         result.put("color", getRandomValueFrom(colorsList));
         result.put("size", getRandomValueFrom(sizeList));
         result.put("groupTypeId",id);
         result.put("groupId",id);
+        // path is not a UDF, we put path to generate thing and then we deleted this.
         result.put("path", path);
+        System.out.println("thingMap.put(\"" + serialNumber + "\", \"" + path + "\");");
         return result;
     }
 
