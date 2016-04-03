@@ -1,6 +1,7 @@
 package dummydata;
 
 import com.mongodb.BasicDBObject;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -25,19 +26,28 @@ public class DummyDataUtils {
         return result;
     }
 
-    public BasicDBObject newThingTree(Long id, String prefix, String path) {
-        String serialNumber = prefix+String.format("%010d", Integer.parseInt(id.toString()));
+    public BasicDBObject newThingTree(Long id, String thingTypeCode, String path) {
+        String serialNumber = thingTypeCode+String.format("%010d", Integer.parseInt(id.toString()));
         BasicDBObject result = new BasicDBObject();
+        String finalPath;
         result.put("_id", id);
         result.put("name", serialNumber);
-        result.put("serialNumber", prefix+String.format("%010d", Integer.parseInt(id.toString())));
-        result.put("color", getRandomValueFrom(colorsList));
-        result.put("size", getRandomValueFrom(sizeList));
+        result.put("serialNumber", serialNumber);
         result.put("groupTypeId",id);
         result.put("groupId",id);
+        result.put("thingTypeCode",thingTypeCode);
+        result.put("color", getRandomValueFrom(colorsList));
+        result.put("size", getRandomValueFrom(sizeList));
         // path is not a UDF, we put path to generate thing and then we deleted this.
-        result.put("path", path);
-        System.out.println("thingMap.put(\"" + serialNumber + "\", \"" + path + "\");");
+        if (!path.isEmpty() && (",").equals(StringUtils.substring(path,0,1))){
+            finalPath = StringUtils.substring(path,1,path.length());
+            result.put("path", finalPath);
+        } else {
+            finalPath = path;
+            result.put("path",finalPath);
+        }
+        System.out.println("INSERT INTO thing_test (name,serial,path,thingType_code) " +
+                "values ('" +serialNumber+ "','" +serialNumber+ "','" +finalPath+"','" +thingTypeCode+ "');");
         return result;
     }
 

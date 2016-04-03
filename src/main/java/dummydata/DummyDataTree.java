@@ -16,7 +16,7 @@ public class DummyDataTree {
     // INITIAL_ID > 1: Collection will continue from this id
     private static int INITIAL_ID = 1;
     private static int MAX_THINGS = 100;
-    private static int MAX_THINGS_BY_DOC = 5;
+    private static int MAX_THINGS_BY_DOC = 20;
     private static int MAX_LEVELS = 6;
     private static int MAX_BLINKS_PER_THING = 500;
     private static String COLLECTION_NAME = "dummy_data_tree";
@@ -42,7 +42,7 @@ public class DummyDataTree {
 //            "pallete,carton,box,item",
             "pallete,carton,box,item,rfid",
     };
-    private static String[] LEVELS = {"palette", "carton", "box", "item", "rfid"};
+    private static String[] LEVELS = {"pallete", "carton", "box", "item", "rfid"};
     private static Long id;
 
     public static void main(String[] args) {
@@ -140,11 +140,11 @@ public class DummyDataTree {
             DummyDataUtils dummyDataUtils = new DummyDataUtils();
             if (things == null) {
                 things = new BasicDBList();
-                String pathAux = (thingBase.get("path").toString().isEmpty())?LEVELS[0]+",":thingBase.get("path").toString()+",";
+                String pathAux = thingBase.get("path").toString()+",";
                 things.add(dummyDataUtils.newThingTree(++id, LEVELS[4], pathAux + LEVELS[4] + "[0]"));
                 thingBase.put(LEVELS[4], things);
             } else {
-                String pathAux = (thingBase.get("path").toString().isEmpty())?LEVELS[0]+",":thingBase.get("path").toString()+",";
+                String pathAux = thingBase.get("path").toString()+",";
                 things.add(dummyDataUtils.newThingTree(++id, LEVELS[4], pathAux + LEVELS[4] + "["+things.size()+"]"));
                 thingBase.put(LEVELS[4], things);
             }
@@ -154,12 +154,12 @@ public class DummyDataTree {
         DummyDataUtils dummyDataUtils = new DummyDataUtils();
         if (things == null) {
             things = new BasicDBList();
-            String pathAux = (thingBase.get("path").toString().isEmpty())?LEVELS[0]+",":thingBase.get("path").toString()+",";
+            String pathAux = thingBase.get("path").toString()+",";
             things.add(dummyDataUtils.newThingTree(++id, LEVELS[initialLevel], pathAux+LEVELS[initialLevel]+"[0]"));
             thingBase.put(LEVELS[initialLevel], things);
         } else {
             if ((things.size() == 1) || (initialLevel == 5)) {
-                String pathAux = (thingBase.get("path").toString().isEmpty())?LEVELS[0]+",":thingBase.get("path").toString()+",";
+                String pathAux = thingBase.get("path").toString()+",";
                 things.add(dummyDataUtils.newThingTree(++id, LEVELS[initialLevel], pathAux+LEVELS[initialLevel]+"["+things.size()+"]"));
                 thingBase.put(LEVELS[initialLevel], things);
             } else {
