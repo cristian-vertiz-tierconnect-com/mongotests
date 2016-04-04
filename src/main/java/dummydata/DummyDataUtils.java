@@ -39,7 +39,7 @@ public class DummyDataUtils {
         result.put("color", getRandomValueFrom(colorsList));
         result.put("size", getRandomValueFrom(sizeList));
         // path is not a UDF, we put path to generate thing and then we deleted this.
-        if (!path.isEmpty() && (",").equals(StringUtils.substring(path,0,1))){
+        if (!path.isEmpty() && (".").equals(StringUtils.substring(path,0,1))){
             finalPath = StringUtils.substring(path,1,path.length());
             result.put("path", finalPath);
         } else {

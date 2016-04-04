@@ -235,10 +235,10 @@ public class DbTreeTest {
 //        createThing();
 
         // get thing if everything is array
- //       getThingBySerial(serialNumber, thingPath,false);
+        getThingBySerial(serialNumber, thingPath,false);
 
         // test get things by serial in tree view (like clause)
-       getThingsByThingType(thingTypeId, "thingTypeId",false);
+//       getThingsByThingType(thingTypeId, "thingTypeId",false);
     }
 
 }
