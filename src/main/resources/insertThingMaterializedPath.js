@@ -4,7 +4,12 @@ db.path_things.insert({
     "thingTypeCode" : "pallete_code",
     "serialNumber" : "P10000",
     "pathThingType" : null,
-    "path" : null
+    "path" : null,
+    "color" : {
+    "thingTypeFieldId" : NumberLong(24),
+        "time" : ISODate("2016-01-10T21:07:49.241Z"),
+        "value" : "Multicolor"
+    }
 });
 
 /* 2 */
@@ -60,7 +65,12 @@ db.path_things.insert({
     "thingTypeCode" : "box_code",
     "serialNumber" : "BOX1000",
     "pathThingType" : "pallete_code,cartoon_code",
-    "path" : ",1,3,"
+    "path" : ",1,3,",
+    "color" : {
+        "thingTypeFieldId" : NumberLong(24),
+        "time" : ISODate("2016-01-10T21:07:49.241Z"),
+        "value" : "Brown"
+    }
 });
 
 /* 6 */

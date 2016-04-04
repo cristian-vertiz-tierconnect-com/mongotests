@@ -7,6 +7,7 @@ import dao.MongoDAOUtil;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -25,19 +26,20 @@ public class DbMaterializedPathTest {
         //db = mongo.getDB("riot_main");
 
         getTreeExamples();
-        System.out.println();
-        System.out.println();
-        //getPlainExamples();
-        System.out.println();
-        System.out.println();
-        //getThingTypeTreeExamples();
-        System.out.println();
-        System.out.println();
-        //getThingTypePlainExamples();
-        System.out.println();
-        System.out.println();
-        //createNewThing();
-        //updateNewThing();
+        getReports();
+//        System.out.println();
+//        System.out.println();
+//        //getPlainExamples();
+//        System.out.println();
+//        System.out.println();
+//        //getThingTypeTreeExamples();
+//        System.out.println();
+//        System.out.println();
+//        //getThingTypePlainExamples();
+//        System.out.println();
+//        System.out.println();
+//        //createNewThing();
+//        //updateNewThing();
 
 
 
@@ -323,5 +325,38 @@ public class DbMaterializedPathTest {
             e.printStackTrace();
         }
 
+    }
+
+    /**
+    * Get report
+    * */
+    public static void getReports()
+    {
+        // pallete_code.color = Multicolor
+        // box_code.color = Brown
+        String code = null;
+        Map<String, Object> options = null;
+        Map<String, Object> mapResult = null;
+
+        try {
+            mapResult = execute(code, options);
+        }catch (Exception e )
+        {
+            e.printStackTrace();
+        }
+
+
+    }
+    private static Map<String, Object> execute(String code, Map<String, Object> options ) throws Exception
+    {
+        Object o = null;
+        try{
+            o = MongoDAOUtil.getInstance().db.eval( code, options );
+        }catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        BasicDBObject bdb = (BasicDBObject) o;
+        return bdb;
     }
 }
