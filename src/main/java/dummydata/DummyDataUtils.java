@@ -3,6 +3,10 @@ package dummydata;
 import com.mongodb.BasicDBObject;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +19,13 @@ public class DummyDataUtils {
     public String prefixSerialNumber = "ThingSerial";
     public static String[] colorsList = {"White", "Gray", "Pink", "Red", "Brown", "Orange", "Yellow", "Green", "Cyan", "Blue", "Violet", "Navy"};
     public static String[] sizeList = {"Small", "Medium", "Large"};
+    public static String[] udfNames = {"status", "store", "zone", "location", "locationXYZ", "quantity", "bookstore", "owner",
+    "abc", "xyz", "other", "other1", "phrase", "asdf"};
+    public static String[] randomStrings = {"DgvCeIlUCT", "YAaRausNWa", "kSPoJeXtnj", "unxxHlIyJa",
+            "oRghFbIhMO", "EGrUihyOXH", "GejPwSefBE", "HXeBAOEnDV", "bzggHXmVyL", "kWqsVCjZgW",
+            "eMqmhHLkaH", "mXVTOhCifz", "QcmuhdZQYe", "YdztbcAScl", "AExFWtZCIB", "AYRRJPcENW",
+            "TXmHDINqJU",
+            "xmaoCkgzja"};
 
     public Map<String, Object> newThing(Long id) {
         Map<String, Object> result = new HashMap<>();
@@ -38,6 +49,10 @@ public class DummyDataUtils {
         result.put("thingTypeCode",thingTypeCode);
         result.put("color", getRandomValueFrom(colorsList));
         result.put("size", getRandomValueFrom(sizeList));
+        // Creating random UDFs
+        for (int i=0; i < (int)(Math.random()*10)+5; i++) {
+            result.put(getRandomName(udfNames), getRandomUdf());
+        }
         // path is not a UDF, we put path to generate thing and then we deleted this.
         if (!path.isEmpty() && (".").equals(StringUtils.substring(path,0,1))){
             finalPath = StringUtils.substring(path,1,path.length());
@@ -46,9 +61,32 @@ public class DummyDataUtils {
             finalPath = path;
             result.put("path",finalPath);
         }
+        File file = new File("test.txt");
+        try {
+            Boolean isNewFile = !(id == 1L);
+            FileOutputStream fis = new FileOutputStream(file, isNewFile);
+            PrintStream out = new PrintStream(fis);
+            System.setOut(out);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
         System.out.println("INSERT INTO thing_test (name,serial,path,thingType_code) " +
                 "values ('" +serialNumber+ "','" +serialNumber+ "','" +finalPath+"','" +thingTypeCode+ "');");
         return result;
+    }
+
+    private Map<String, Object> getRandomUdf() {
+        Map<String, Object> result = new HashMap<>();
+        int total = (int)(Math.random()*udfNames.length)+2;
+        for (int i = 0; i < total; i++) {
+            result.put(getRandomName(udfNames), getRandomName(randomStrings));
+        }
+        return result;
+    }
+
+    private String getRandomName(String[] list) {
+        return list[(int)(Math.random()*list.length)];
     }
 
     public static Object getRandomValueFrom(String[] list) {

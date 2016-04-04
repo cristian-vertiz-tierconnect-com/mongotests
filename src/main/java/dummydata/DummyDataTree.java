@@ -14,14 +14,14 @@ import java.util.*;
 public class DummyDataTree {
     // INITIAL_ID = 1: Collection will be deleted
     // INITIAL_ID > 1: Collection will continue from this id
-    private static int INITIAL_ID = 1;
-    private static int MAX_THINGS = 100;
+    private static int INITIAL_ID = 100;
+    private static int MAX_THINGS = 10000;
     private static int MAX_THINGS_BY_DOC = 20;
     private static int MAX_LEVELS = 6;
     private static int MAX_BLINKS_PER_THING = 500;
     private static String COLLECTION_NAME = "tree_things";
-    private static String COLLECTION_SNAPSHOTS_IDS = "dummy_data_tree_snapshots_ids";
-    private static String COLLECTION_SNAPSHOTS = "dummy_data_tree_snapshots";
+    private static String COLLECTION_SNAPSHOTS_IDS = "tree_things_snapshots_ids";
+    private static String COLLECTION_SNAPSHOTS = "tree_things_snapshots";
     private static String[] THING_TYPE_CODES = {
             "pallete_code",
             "pallete_code,rfid_code",
@@ -188,7 +188,8 @@ public class DummyDataTree {
 
     private static Boolean initMongo() {
         try {
-            MongoDAOUtil.setupMongodb("localhost", 27017, "riot_main", null , null, "admin", "control123!");
+//            MongoDAOUtil.setupMongodb("localhost", 27017, "riot_main", null , null, "admin", "control123!");
+            MongoDAOUtil.setupMongodb("10.100.0.140",27017, "riot_main", null , null, "admin", "control123!");
             return true;
         } catch (Exception e) {
             e.printStackTrace();
