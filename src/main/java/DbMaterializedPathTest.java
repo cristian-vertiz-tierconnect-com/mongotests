@@ -26,7 +26,7 @@ public class DbMaterializedPathTest {
         //db = mongo.getDB("riot_main");
 
         getTreeExamples();
-        getReports();
+        //getReports();
 //        System.out.println();
 //        System.out.println();
 //        //getPlainExamples();
@@ -48,7 +48,7 @@ public class DbMaterializedPathTest {
     public static void getTreeExamples()
     {
         System.out.println("*******TREE DATA");
-        String serial = "P10000";//P10000 CARTOON1000 RFID1002 BOX1000 ITEM1000 RFID1003  DATA1000-17
+        String serial = "PALLETE0000000023";//P10000 CARTOON1000 RFID1002 BOX1000 ITEM1000 RFID1003  DATA1000-17
         lstThingListTree(serial, null);
     }
 
@@ -319,7 +319,7 @@ public class DbMaterializedPathTest {
 
     public static void init(){
         try {
-            MongoDAOUtil.setupMongodb("localhost",27017, "path_riot_main", null , null, "admin", "control123!");
+            MongoDAOUtil.setupMongodb("localhost",27017, "riot_main", null , null, "admin", "control123!");
 //            MongoDAOUtil.setupMongodb("10.100.1.140",27017, "riot_main", null , null, "vizix", "m0j1xInc!");
         } catch (UnknownHostException e) {
             e.printStackTrace();
