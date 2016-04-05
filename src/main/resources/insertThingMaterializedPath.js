@@ -126,7 +126,12 @@ db.path_things.insert({
     "thingTypeCode" : "pallete_code",
     "serialNumber" : "P10001",
     "pathThingType" : null,
-    "path" : null
+    "path" : null,
+    "color" : {
+        "thingTypeFieldId" : NumberLong(24),
+        "time" : ISODate("2016-01-10T21:07:49.241Z"),
+        "value" : "Multicolor"
+    }
 });
 
 /* 10 */
@@ -324,3 +329,110 @@ db.getCollection('path_thingSnapshotIds').find(
     { "blinks" : {"$elemMatch": { "time": { "$lte": 1459518142754 } } } }
 );
 db.getCollection('path_thingSnapshots').find({_id:ObjectId("56fe7abeba7e4e5453fd8a64")},{value:true});
+
+/*********************************************/
+
+/**
+ *
+ * Example RAW Mongo DB query showing the expected properties in the response javascript object
+ *
+ */
+function( options )
+{
+    var table = new Object();
+
+    // required
+    table.options = options;
+
+    // optional, but recommended
+    table.title = "Example #1a";
+
+    // optional
+    table.labelX = "Words";
+
+    // optional
+    table.labelY = "Letters";
+
+    // optional
+    table.labelZ = "Count";
+
+    // optional
+    table.columnNames = ["Id", "Pallete.Color", "Cartoon.SerialNumber", "Box.Color" ];
+
+    // optional
+    //table.rowNames = [ "Alpha", "Bravo", "Charlie", "Delta" ];
+
+    // pallete_code.color = Multicolor
+    // search all cartoon_code with
+    // box_code.color = Brown
+    var result = [];
+    var myCursor = db.getCollection('path_things').find(
+        {
+            thingTypeCode:"pallete_code"
+            //,"color.value":"Multicolor"
+        }
+    );
+
+//      while (myCursor.hasNext()) {
+//             print(tojson(myCursor.next()));
+//          }
+
+    while (myCursor.hasNext()) {
+        var cursor = myCursor.next();
+        var id =  "^,"+cursor._id+",";
+        var myCursorPath2 = db.getCollection('path_things').find(
+            {
+                path:{$regex:id}
+            },{_id:true, serialNumber:true,color:true,thingTypeCode:true}).sort({ color: -1 });
+
+//         while (myCursorPath2.hasNext()) {
+//             print(tojson(myCursorPath2.next()));
+//          }
+        //Verify the filters
+
+
+        if(cursor.color!=null)
+        {
+            var count = 0;
+            var subResult=[];
+            subResult.push(cursor._id);
+            subResult.push(cursor.color.value);
+            var serialNumber = null;
+            var colorBox = null;
+            //print(cursor.color.value);
+            while (myCursorPath2.hasNext()) {
+                var subElement = myCursorPath2.next();
+                //            for(var key in subElement){
+                //                print(key+"-"+subElement._id)
+                //            }
+                if(subElement.thingTypeCode == "cartoon_code")
+                {
+                    //subResult.push(subElement.serialNumber);
+                    serialNumber = subElement.serialNumber;
+                    count++;
+                }
+                if(subElement.thingTypeCode == "box_code" && subElement.color!=null)
+                {
+                    if(subElement.color.value == "Brown" || subElement.color.value == "Yellow" || subElement.color.value == "Red"  )
+                    {
+                        //subResult.push(subElement.color.value);
+                        colorBox = subElement.color.value;
+                        count++;
+                    }
+                }
+            };
+            //Create Object
+            if(count==2){
+                subResult.push(serialNumber);
+                subResult.push(colorBox);
+                result.push(subResult);
+            }
+
+        }
+    }
+    table.data = result;
+
+    return table;
+}
+
+
