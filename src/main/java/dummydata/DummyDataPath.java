@@ -11,7 +11,7 @@ import java.util.*;
  * Created by rsejas on 3/31/16.
  */
 public class DummyDataPath {
-    private static int MAX_THINGS = 100;
+    private static int MAX_THINGS = 10000;
     private static int MAX_BLINKS_PER_THING = 500;
     private static int MAX_THINGS_BY_DOC = 20;
     private static Long START_THING_ID = 1L;//0

@@ -20,10 +20,8 @@ public class DbMaterializedPathTest {
     //public static DB db = null;
 
     static public void main(String[] args) throws IOException {
-
         init();
-        //Mongo mongo = new Mongo("localhost", 27017);
-        //db = mongo.getDB("riot_main");
+        //testSpringMongo();
 
         getTreeExamples();
         //getReports();
@@ -45,10 +43,26 @@ public class DbMaterializedPathTest {
 
     }
 
+    public static void testSpringMongo()
+    {
+        final long startTime = System.currentTimeMillis();
+        BasicDBObject query    = new BasicDBObject();
+        query.append("thingTypeCode", "box_code");
+        DBCursor pivotCursor = MongoDAOUtil.getInstance().getCollection("path_things").find(query);
+        while( pivotCursor.hasNext() )
+        {
+            DBObject data = pivotCursor.next();
+            System.out.println(data);
+        }
+        final long endTime = System.currentTimeMillis();
+        final long total = endTime-startTime;
+        System.out.println("TOTAL(ms)> "+total);
+    }
+
     public static void getTreeExamples()
     {
         System.out.println("*******TREE DATA");
-        String serial = "PALLETE0000000023";//P10000 CARTOON1000 RFID1002 BOX1000 ITEM1000 RFID1003  DATA1000-17
+        String serial = "PALLETE0000005802";//P10000 CARTOON1000 RFID1002 BOX1000 ITEM1000 RFID1003  DATA1000-17
         lstThingListTree(serial, null);
     }
 
