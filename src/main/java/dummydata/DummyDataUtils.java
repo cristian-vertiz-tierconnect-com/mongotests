@@ -30,9 +30,9 @@ public class DummyDataUtils {
             "TXmHDINqJU",
             "xmaoCkgzja"};
 
-    public Map<String, Object> newThing(Long id, String prefix) {
+    public static BasicDBObject newThing(Long id, String prefix) {
         String serialNumber = prefix.toUpperCase()+String.format("%010d", Integer.parseInt(id.toString()));
-        Map<String, Object> result = new HashMap<>();
+        BasicDBObject result = new BasicDBObject();
         result.put("_id", id);
         result.put("name", serialNumber);
         result.put("serialNumber", serialNumber);
@@ -84,7 +84,7 @@ public class DummyDataUtils {
         return result;
     }
 
-    private Map<String, Object> getRandomUdf() {
+    private static Map<String, Object> getRandomUdf() {
         Map<String, Object> result = new HashMap<>();
         int total = (int)(Math.random()*udfNames.length)+2;
         for (int i = 0; i < total; i++) {
@@ -93,7 +93,7 @@ public class DummyDataUtils {
         return result;
     }
 
-    private String getRandomName(String[] list) {
+    private static String getRandomName(String[] list) {
         return list[(int)(Math.random()*list.length)];
     }
 
