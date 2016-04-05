@@ -1,7 +1,10 @@
 package dummydata;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import dao.MongoDAOUtil;
 import org.apache.commons.lang.StringUtils;
+import org.bson.types.ObjectId;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,13 +30,18 @@ public class DummyDataUtils {
             "TXmHDINqJU",
             "xmaoCkgzja"};
 
-    public Map<String, Object> newThing(Long id) {
+    public Map<String, Object> newThing(Long id, String prefix) {
+        String serialNumber = prefix.toUpperCase()+String.format("%010d", Integer.parseInt(id.toString()));
         Map<String, Object> result = new HashMap<>();
         result.put("_id", id);
-        result.put("name", prefixName+id);
-        result.put("serialNumber", prefixSerialNumber+id);
+        result.put("name", serialNumber);
+        result.put("serialNumber", serialNumber);
         result.put("color", getRandomValueFrom(colorsList));
         result.put("size", getRandomValueFrom(sizeList));
+        // Creating random UDFs
+        for (int i=0; i < (int)(Math.random()*10)+5; i++) {
+            result.put(getRandomName(udfNames), getRandomUdf());
+        }
         return result;
     }
 
@@ -95,5 +103,36 @@ public class DummyDataUtils {
         object.put("thingTypeFieldId", Long.valueOf(String.valueOf((int)(Math.random()*100))));
         object.put("time", new Date());
         return object;
+    }
+
+    public static void createSnapshot(BasicDBObject thingObject, String collSnapshots, String collSnapshotsIds, int maxBlinks) {
+        BasicDBList blinks = new BasicDBList();
+        Date date = new Date();
+        Long delta = 100000*1000L;
+        Long timeMili = date.getTime() - (maxBlinks+1)*delta;
+        for(int i = 0; i < maxBlinks; i++) {
+            BasicDBObject snapshot = new BasicDBObject();
+
+            if(i > 0) {
+                thingObject.put("color", DummyDataUtils.getRandomValueFrom(DummyDataUtils.colorsList));
+                thingObject.put("size", DummyDataUtils.getRandomValueFrom(DummyDataUtils.sizeList));
+            }
+
+            snapshot.put("value",thingObject);
+            snapshot.put("time", new Date(timeMili));
+            MongoDAOUtil.getInstance().getCollection(collSnapshots).save(snapshot);
+            ObjectId objId = (ObjectId)snapshot.get( "_id" );
+
+            BasicDBObject blink = new BasicDBObject();
+            blink.put("time", timeMili);
+            blink.put("blink_id", objId);
+            blinks.add(0, blink);
+            timeMili += delta;
+        }
+
+        BasicDBObject snapshotId = new BasicDBObject();
+        snapshotId.put("_id",thingObject.get("_id"));
+        snapshotId.put("blinks",blinks);
+        MongoDAOUtil.getInstance().getCollection(collSnapshotsIds).save(snapshotId);
     }
 }

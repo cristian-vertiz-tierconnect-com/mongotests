@@ -11,11 +11,14 @@ import java.util.*;
  * Created by rsejas on 3/31/16.
  */
 public class DummyDataPath {
+    private static Boolean removeCollections = true;
     private static int MAX_THINGS = 10000;
     private static int MAX_BLINKS_PER_THING = 500;
     private static int START_THING_ID = 22;//0
     private static int MAX_LEVELS = 6;
     private static String COLLECTION_NAME = "path_things";
+    private static String COLLECTION_SNAPSHOTS = "path_thingSnapshots";
+    private static String COLLECTION_SNAPSHOTS_IDS = "path_thingSnapshotIds";
     private static String[] THING_TYPE_CODES = {
 /*            "pallete_code",
             "pallete_code,default_rfid_thingtype",
@@ -34,12 +37,17 @@ public class DummyDataPath {
 //            "pallete,cartoon,box",
             "pallete,cartoon,box,default_rfid_thingtype",
 //            "pallete,cartoon,box,item",*/
-            "pallete,cartoon,box,item,default_rfid_thingtype",
+            "pallete,cartoon,box,item,rfid",
     };
 
     public static void main(String[] args) {
         final long startTime = System.currentTimeMillis();
         Boolean mongoInitialized = initMongo();
+        if (removeCollections) {
+            MongoDAOUtil.getInstance().getCollection(COLLECTION_NAME).drop();
+            MongoDAOUtil.getInstance().getCollection(COLLECTION_SNAPSHOTS).drop();
+            MongoDAOUtil.getInstance().getCollection(COLLECTION_SNAPSHOTS_IDS).drop();
+        }
         if (mongoInitialized) {
             fillDummyData();
         }
@@ -66,7 +74,7 @@ public class DummyDataPath {
                 if (k > 0) {
                     path += (id)+",";
                 }
-                Map<String, Object> thingMap = dummyDataUtils.newThing(Long.valueOf(String.valueOf(++id)));
+                Map<String, Object> thingMap = dummyDataUtils.newThing(Long.valueOf(String.valueOf(++id)), levels[k]);
                 BasicDBObject thingObject = new BasicDBObject();
                 for (Map.Entry<String, Object> entry : thingMap.entrySet()) {
                     thingObject.put(entry.getKey(), entry.getValue());
@@ -80,7 +88,7 @@ public class DummyDataPath {
                 thingObject.put("path", (k == 0)?null:path);
                 MongoDAOUtil.getInstance().getCollection(COLLECTION_NAME).save(thingObject);
                 //Create Snapshot
-                createSnapshot(thingObject);
+                dummyDataUtils.createSnapshot(thingObject, COLLECTION_SNAPSHOTS, COLLECTION_SNAPSHOTS_IDS, MAX_BLINKS_PER_THING);
                 int total = MAX_THINGS + START_THING_ID;
                 if(id>=total)
                 {
@@ -89,37 +97,6 @@ public class DummyDataPath {
                 }
             }
         }
-    }
-
-    public static void createSnapshot(BasicDBObject thingObject)
-    {
-        BasicDBList blinks = new BasicDBList();
-        for(int i = 0; i< MAX_BLINKS_PER_THING; i++)
-        {
-            Date date = new Date();
-            BasicDBObject snapshot = new BasicDBObject();
-
-            if(i>0)
-            {
-                thingObject.put("color", DummyDataUtils.getRandomValueFrom(DummyDataUtils.colorsList));
-                thingObject.put("size", DummyDataUtils.getRandomValueFrom(DummyDataUtils.sizeList));
-            }
-
-            snapshot.put("value",thingObject);
-            snapshot.put("time",date);
-            MongoDAOUtil.getInstance().getCollection("path_thingSnapshots").save(snapshot);
-            ObjectId objId = (ObjectId)snapshot.get( "_id" );
-
-            BasicDBObject blink = new BasicDBObject();
-            blink.put("time", date.getTime());
-            blink.put("blink_id", objId);
-            blinks.add(blink);
-        }
-
-        BasicDBObject snapshotId = new BasicDBObject();
-        snapshotId.put("_id",thingObject.get("_id"));
-        snapshotId.put("blinks",blinks);
-        MongoDAOUtil.getInstance().getCollection("path_thingSnapshotIds").save(snapshotId);
     }
 
     private static List<Map<String, Object>> fillThingTypeList() {

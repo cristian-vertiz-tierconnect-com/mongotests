@@ -85,43 +85,8 @@ public class DummyDataTree {
         }
         thing.remove("path");
         // Creating snapshots
-        createSnapshot(thing);
+        DummyDataUtils.createSnapshot(thing, COLLECTION_SNAPSHOTS, COLLECTION_SNAPSHOTS_IDS, MAX_BLINKS_PER_THING);
         return thing;
-    }
-
-    public static void createSnapshot(BasicDBObject thingObject)
-    {
-        BasicDBList blinks = new BasicDBList();
-        Date date = new Date();
-        Long delta = 100000*1000L;
-        Long timeMili = date.getTime() - (MAX_BLINKS_PER_THING+1)*delta;
-        for(int i = 0; i< MAX_BLINKS_PER_THING; i++)
-        {
-
-            BasicDBObject snapshot = new BasicDBObject();
-
-            if(i>0)
-            {
-                thingObject.put("color", DummyDataUtils.getRandomValueFrom(DummyDataUtils.colorsList));
-                thingObject.put("size", DummyDataUtils.getRandomValueFrom(DummyDataUtils.sizeList));
-            }
-
-            snapshot.put("value",thingObject);
-            snapshot.put("time",new Date(timeMili));
-            MongoDAOUtil.getInstance().getCollection(COLLECTION_SNAPSHOTS).save(snapshot);
-            ObjectId objId = (ObjectId)snapshot.get( "_id" );
-
-            BasicDBObject blink = new BasicDBObject();
-            blink.put("time", timeMili);
-            blink.put("blink_id", objId);
-            blinks.add(0,blink);
-            timeMili+=delta;
-        }
-
-        BasicDBObject snapshotId = new BasicDBObject();
-        snapshotId.put("_id",thingObject.get("_id"));
-        snapshotId.put("blinks",blinks);
-        MongoDAOUtil.getInstance().getCollection(COLLECTION_SNAPSHOTS_IDS).save(snapshotId);
     }
 
     private static BasicDBObject createThingDoc(int nThings) {
