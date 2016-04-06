@@ -105,10 +105,11 @@ public class DummyDataUtils {
         return object;
     }
 
-    public static void createSnapshot(BasicDBObject thingObject, String collSnapshots, String collSnapshotsIds, int maxBlinks) {
+    public static void createSnapshot(BasicDBObject thingObject, String collSnapshots, String collSnapshotsIds, int blinksLimitMin, int blinksLimitMax) {
         BasicDBList blinks = new BasicDBList();
         Date date = new Date();
         Long delta = 100000*1000L;
+        int maxBlinks = (int)(Math.random()*(blinksLimitMax-blinksLimitMin)) + blinksLimitMin + 1;
         Long timeMili = date.getTime() - (maxBlinks+1)*delta;
         for(int i = 0; i < maxBlinks; i++) {
             BasicDBObject snapshot = new BasicDBObject();

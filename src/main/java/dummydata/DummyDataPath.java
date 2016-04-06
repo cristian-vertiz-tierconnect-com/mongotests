@@ -3,7 +3,6 @@ package dummydata;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import dao.MongoDAOUtil;
-import org.bson.types.ObjectId;
 
 import java.util.*;
 
@@ -13,6 +12,8 @@ import java.util.*;
 public class DummyDataPath {
     private static int MAX_THINGS = 10000;
     private static int MAX_BLINKS_PER_THING = 500;
+    private static int BLINKS_PER_THING_LIMIT_MIN = 150;
+    private static int BLINKS_PER_THING_LIMIT_MAX = 500;
     private static int MAX_THINGS_BY_DOC = 20;
     private static Long START_THING_ID = 1L;//0
     private static int MAX_LEVELS = 6;
@@ -56,7 +57,7 @@ public class DummyDataPath {
             for (Object doc:docs) {
                 MongoDAOUtil.getInstance().getCollection(COLLECTION_NAME).save((BasicDBObject)doc);
                 // Creating snapshots
-                DummyDataUtils.createSnapshot((BasicDBObject) doc, COLLECTION_SNAPSHOTS, COLLECTION_SNAPSHOTS_IDS, MAX_BLINKS_PER_THING);
+                DummyDataUtils.createSnapshot((BasicDBObject) doc, COLLECTION_SNAPSHOTS, COLLECTION_SNAPSHOTS_IDS, BLINKS_PER_THING_LIMIT_MIN, BLINKS_PER_THING_LIMIT_MAX);
             }
         }
 //        List<Map<String, Object>> thingTypeList = fillThingTypeList();

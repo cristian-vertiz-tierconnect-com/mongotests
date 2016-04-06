@@ -2,9 +2,7 @@ package dummydata;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
-import com.sun.xml.internal.ws.util.StringUtils;
 import dao.MongoDAOUtil;
-import org.bson.types.ObjectId;
 
 import java.util.*;
 
@@ -19,6 +17,8 @@ public class DummyDataTree {
     private static int MAX_THINGS_BY_DOC = 20;
     private static int MAX_LEVELS = 6;
     private static int MAX_BLINKS_PER_THING = 500;
+    private static int BLINKS_PER_THING_LIMIT_MIN = 150;
+    private static int BLINKS_PER_THING_LIMIT_MAX = 500;
     private static String COLLECTION_NAME = "tree_things";
     private static String COLLECTION_SNAPSHOTS_IDS = "tree_things_snapshots_ids";
     private static String COLLECTION_SNAPSHOTS = "tree_things_snapshots";
@@ -85,7 +85,7 @@ public class DummyDataTree {
         }
         thing.remove("path");
         // Creating snapshots
-        DummyDataUtils.createSnapshot(thing, COLLECTION_SNAPSHOTS, COLLECTION_SNAPSHOTS_IDS, MAX_BLINKS_PER_THING);
+        DummyDataUtils.createSnapshot(thing, COLLECTION_SNAPSHOTS, COLLECTION_SNAPSHOTS_IDS, BLINKS_PER_THING_LIMIT_MIN, BLINKS_PER_THING_LIMIT_MAX);
         return thing;
     }
 
@@ -153,8 +153,8 @@ public class DummyDataTree {
 
     private static Boolean initMongo() {
         try {
-//            MongoDAOUtil.setupMongodb("localhost", 27017, "riot_main", null , null, "admin", "control123!");
-            MongoDAOUtil.setupMongodb("10.100.0.140",27017, "riot_main", null , null, "admin", "control123!");
+            MongoDAOUtil.setupMongodb("localhost", 27017, "riot_main", null , null, "admin", "control123!");
+//            MongoDAOUtil.setupMongodb("10.100.0.140",27017, "riot_main", null , null, "admin", "control123!");
             return true;
         } catch (Exception e) {
             e.printStackTrace();
