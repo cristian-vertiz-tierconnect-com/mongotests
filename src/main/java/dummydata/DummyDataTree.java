@@ -46,10 +46,13 @@ public class DummyDataTree {
     private static Long id;
 
     public static void main(String[] args) {
+        System.out.println("Starting tree path things");
+        Long initialTime = new Date().getTime();
         Boolean mongoInitialized = initMongo();
         if (mongoInitialized) {
             fillDummyData();
         }
+        System.out.println("Finishing... "+(System.currentTimeMillis()-initialTime));
     }
 
     private static void fillDummyData() {
