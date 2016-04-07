@@ -118,6 +118,9 @@ public class DummyDataTree {
             }
             return thingBase;
         }
+        if (initialLevel>=LEVELS.length) {
+            initialLevel = LEVELS.length - 1;
+        }
         BasicDBList things = (BasicDBList) thingBase.get(LEVELS[initialLevel]);
         DummyDataUtils dummyDataUtils = new DummyDataUtils();
         if (things == null) {
