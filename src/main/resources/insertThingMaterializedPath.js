@@ -8,7 +8,7 @@ db.path_things.insert({
     "color" : {
     "thingTypeFieldId" : NumberLong(24),
         "time" : ISODate("2016-01-10T21:07:49.241Z"),
-        "value" : "Multicolor"
+        "value" : "Azul"
     }
 });
 
@@ -37,7 +37,12 @@ db.path_things.insert({
     "thingTypeCode" : "cartoon_code",
     "serialNumber" : "CARTOON1000",
     "pathThingType" : "pallete_code",
-    "path" : ",1,"
+    "path" : ",1,",
+    "color" : {
+        "thingTypeFieldId" : NumberLong(24),
+        "time" : ISODate("2016-01-10T21:07:49.241Z"),
+        "value" : "Green"
+    }
 });
 
 /* 4 */
@@ -159,7 +164,12 @@ db.path_things.insert({
     "serialNumber" : "CARTOON1001",
     "thingTypeCode" : "cartoon_code",
     "pathThingType" : "pallete_code",
-    "path" : ",9,"
+    "path" : ",9,",
+    "color" : {
+        "thingTypeFieldId" : NumberLong(24),
+        "time" : ISODate("2016-01-10T21:07:49.241Z"),
+        "value" : "Zafiro"
+    }
 });
 
 /* 12 */
