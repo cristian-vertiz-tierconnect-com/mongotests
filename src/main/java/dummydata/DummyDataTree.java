@@ -5,6 +5,8 @@ import com.mongodb.BasicDBObject;
 import dao.MongoDAOUtil;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by rsejas on 3/31/16.
@@ -12,7 +14,8 @@ import java.util.*;
 public class DummyDataTree {
     // INITIAL_ID = 1: Collection will be deleted
     // INITIAL_ID > 1: Collection will continue from this id
-    private static int INITIAL_ID = 25764;
+    private static int nThreads = 15;
+    private static int INITIAL_ID = 50019;
     private static int MAX_THINGS = 1000000;
     private static int MAX_THINGS_BY_DOC = 20;
     private static int MAX_LEVELS = 6;
@@ -55,22 +58,89 @@ public class DummyDataTree {
         System.out.println("Finishing... "+(System.currentTimeMillis()-initialTime));
     }
 
+    private static class RunnableTree implements Runnable {
+        private static int thingsByDoc;
+        private static Long initialId;
+        public RunnableTree(int thingsByDoc, Long initialId) {
+            this.thingsByDoc = thingsByDoc;
+            this.initialId = initialId;
+        }
+
+        @Override
+        public void run() {
+            BasicDBObject doc = createThingDoc(thingsByDoc);
+            doc = removePathFrom(doc);
+            MongoDAOUtil.getInstance().getCollection(COLLECTION_NAME).save(doc);
+        }
+        private static BasicDBObject createThingDoc(int nThings) {
+            DummyDataUtils dummyDataUtils = new DummyDataUtils();
+            BasicDBObject parent = dummyDataUtils.newThingTree(++id, LEVELS[0], "");
+            while ((--nThings > 0) && (initialId < MAX_THINGS)){
+                parent = addChild(parent, LEVELS[0], 1, (int)(Math.random()*5));
+            }
+            return parent;
+        }
+
+        private static BasicDBObject addChild(BasicDBObject thingBase, String path, int initialLevel, int level) {
+            // Creating rfid
+            if ((int)(Math.random()*10) < 3) {
+                BasicDBList things = (BasicDBList) thingBase.get(LEVELS[4]);
+                DummyDataUtils dummyDataUtils = new DummyDataUtils();
+                if (things == null) {
+                    things = new BasicDBList();
+                    String pathAux = thingBase.get("path").toString()+".";
+                    things.add(dummyDataUtils.newThingTree(++initialId, LEVELS[4], pathAux + LEVELS[4] + "[0]"));
+                    thingBase.put(LEVELS[4], things);
+                } else {
+                    String pathAux = thingBase.get("path").toString()+".";
+                    things.add(dummyDataUtils.newThingTree(++initialId, LEVELS[4], pathAux + LEVELS[4] + "["+things.size()+"]"));
+                    thingBase.put(LEVELS[4], things);
+                }
+                return thingBase;
+            }
+            if (initialLevel >= LEVELS.length) {
+                initialLevel = LEVELS.length - 1;
+            }
+            BasicDBList things = (BasicDBList) thingBase.get(LEVELS[initialLevel]);
+            DummyDataUtils dummyDataUtils = new DummyDataUtils();
+            if (things == null) {
+                things = new BasicDBList();
+                String pathAux = thingBase.get("path").toString()+".";
+                things.add(dummyDataUtils.newThingTree(++initialId, LEVELS[initialLevel], pathAux+LEVELS[initialLevel]+"[0]"));
+                thingBase.put(LEVELS[initialLevel], things);
+            } else {
+                if ((things.size() == 1) || (initialLevel == 5)) {
+                    String pathAux = thingBase.get("path").toString()+".";
+                    things.add(dummyDataUtils.newThingTree(++initialId, LEVELS[initialLevel], pathAux+LEVELS[initialLevel]+"["+things.size()+"]"));
+                    thingBase.put(LEVELS[initialLevel], things);
+                } else {
+                    int pos = (int)(Math.random()*things.size());
+                    BasicDBObject auxThing = (BasicDBObject) things.get(pos);
+                    //path + auxThing.get("path").toString()+","+LEVELS[initialLevel]
+                    auxThing = addChild(auxThing, "", initialLevel+1, level);
+                    things.remove(pos);
+                    things.add(pos, auxThing);
+                    thingBase.put(LEVELS[initialLevel], things);
+                }
+            }
+            return thingBase;
+        }
+    }
+
     private static void fillDummyData() {
         if (INITIAL_ID == 1) {
             MongoDAOUtil.getInstance().getCollection(COLLECTION_NAME).drop();
             MongoDAOUtil.getInstance().getCollection(COLLECTION_SNAPSHOTS_IDS).drop();
             MongoDAOUtil.getInstance().getCollection(COLLECTION_SNAPSHOTS).drop();
         }
-        List<Map<String, Object>> thingTypeList = fillThingTypeList();
-        DummyDataUtils dummyDataUtils = new DummyDataUtils();
         id = INITIAL_ID - 1L;
         // N things
+        ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
         while (id < MAX_THINGS) {
-            BasicDBObject doc = createThingDoc((int)(Math.random()*MAX_THINGS_BY_DOC+1));
-            doc = removePathFrom(doc);
-            MongoDAOUtil.getInstance().getCollection(COLLECTION_NAME).save(doc);
-            // Creating snapshots
-
+            int nThings = (int) (Math.random() * THING_TYPE_NAMES.length)+5;
+            RunnableTree runnableTree = new RunnableTree(nThings, id);
+            executorService.execute(runnableTree);
+            id += nThings;
         }
     }
 
@@ -92,59 +162,7 @@ public class DummyDataTree {
         return thing;
     }
 
-    private static BasicDBObject createThingDoc(int nThings) {
-        DummyDataUtils dummyDataUtils = new DummyDataUtils();
-        BasicDBObject parent = dummyDataUtils.newThingTree(++id, LEVELS[0], "");
-        while ((--nThings > 0) && (id < MAX_THINGS)){
-            parent = addChild(parent, LEVELS[0], 1, (int)(Math.random()*5));
-        }
-        return parent;
-    }
 
-    private static BasicDBObject addChild(BasicDBObject thingBase, String path, int initialLevel, int level) {
-        // Creating rfid
-        if ((int)(Math.random()*10) < 3) {
-            BasicDBList things = (BasicDBList) thingBase.get(LEVELS[4]);
-            DummyDataUtils dummyDataUtils = new DummyDataUtils();
-            if (things == null) {
-                things = new BasicDBList();
-                String pathAux = thingBase.get("path").toString()+".";
-                things.add(dummyDataUtils.newThingTree(++id, LEVELS[4], pathAux + LEVELS[4] + "[0]"));
-                thingBase.put(LEVELS[4], things);
-            } else {
-                String pathAux = thingBase.get("path").toString()+".";
-                things.add(dummyDataUtils.newThingTree(++id, LEVELS[4], pathAux + LEVELS[4] + "["+things.size()+"]"));
-                thingBase.put(LEVELS[4], things);
-            }
-            return thingBase;
-        }
-        if (initialLevel>=LEVELS.length) {
-            initialLevel = LEVELS.length - 1;
-        }
-        BasicDBList things = (BasicDBList) thingBase.get(LEVELS[initialLevel]);
-        DummyDataUtils dummyDataUtils = new DummyDataUtils();
-        if (things == null) {
-            things = new BasicDBList();
-            String pathAux = thingBase.get("path").toString()+".";
-            things.add(dummyDataUtils.newThingTree(++id, LEVELS[initialLevel], pathAux+LEVELS[initialLevel]+"[0]"));
-            thingBase.put(LEVELS[initialLevel], things);
-        } else {
-            if ((things.size() == 1) || (initialLevel == 5)) {
-                String pathAux = thingBase.get("path").toString()+".";
-                things.add(dummyDataUtils.newThingTree(++id, LEVELS[initialLevel], pathAux+LEVELS[initialLevel]+"["+things.size()+"]"));
-                thingBase.put(LEVELS[initialLevel], things);
-            } else {
-                int pos = (int)(Math.random()*things.size());
-                BasicDBObject auxThing = (BasicDBObject) things.get(pos);
-                //path + auxThing.get("path").toString()+","+LEVELS[initialLevel]
-                auxThing = addChild(auxThing, "", initialLevel+1, level);
-                things.remove(pos);
-                things.add(pos, auxThing);
-                thingBase.put(LEVELS[initialLevel], things);
-            }
-        }
-        return thingBase;
-    }
 
     private static List<Map<String, Object>> fillThingTypeList() {
         List<Map<String, Object>> result = new ArrayList<>();
