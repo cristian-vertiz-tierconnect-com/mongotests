@@ -12,7 +12,7 @@ import java.util.*;
 public class DummyDataTree {
     // INITIAL_ID = 1: Collection will be deleted
     // INITIAL_ID > 1: Collection will continue from this id
-    private static int INITIAL_ID = 1;
+    private static int INITIAL_ID = 25764;
     private static int MAX_THINGS = 1000000;
     private static int MAX_THINGS_BY_DOC = 20;
     private static int MAX_LEVELS = 6;
@@ -117,6 +117,9 @@ public class DummyDataTree {
                 thingBase.put(LEVELS[4], things);
             }
             return thingBase;
+        }
+        if (initialLevel>=LEVELS.length) {
+            initialLevel = LEVELS.length - 1;
         }
         BasicDBList things = (BasicDBList) thingBase.get(LEVELS[initialLevel]);
         DummyDataUtils dummyDataUtils = new DummyDataUtils();
