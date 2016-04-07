@@ -14,8 +14,8 @@ import java.util.concurrent.Executors;
 public class DummyDataTree {
     // INITIAL_ID = 1: Collection will be deleted
     // INITIAL_ID > 1: Collection will continue from this id
-    private static int nThreads = 15;
-    private static int INITIAL_ID = 50019;
+    private static int nThreads = 18;
+    private static int INITIAL_ID = 150420;
     private static int MAX_THINGS = 1000000;
     private static int MAX_THINGS_BY_DOC = 20;
     private static int MAX_LEVELS = 6;
