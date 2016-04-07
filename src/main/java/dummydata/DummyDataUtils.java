@@ -71,7 +71,7 @@ public class DummyDataUtils {
         }
         int thingsPerFile = 50000;
         Boolean isNewFile = !((id == 1L) || (id % thingsPerFile == 0));
-        File file = new File("/opt/dev/test"+(int)(id/thingsPerFile)+".txt");
+        File file = new File("/opt/dev/treeThings"+(int)(id/thingsPerFile)+".sql");
         try {
 
             FileOutputStream fis = new FileOutputStream(file, isNewFile);
