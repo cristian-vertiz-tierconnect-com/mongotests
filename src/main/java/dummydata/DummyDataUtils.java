@@ -69,9 +69,11 @@ public class DummyDataUtils {
             finalPath = path;
             result.put("path",finalPath);
         }
-        File file = new File("test.txt");
+        int thingsPerFile = 50000;
+        Boolean isNewFile = !((id == 1L) || (id % thingsPerFile == 0));
+        File file = new File("/opt/dev/treeThings"+(int)(id/thingsPerFile)+".sql");
         try {
-            Boolean isNewFile = !(id == 1L);
+
             FileOutputStream fis = new FileOutputStream(file, isNewFile);
             PrintStream out = new PrintStream(fis);
             System.setOut(out);
