@@ -5,11 +5,14 @@ import com.mongodb.BasicDBObject;
 import dao.MongoDAOUtil;
 
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by rsejas on 3/31/16.
  */
 public class DummyDataPath {
+    private static int nThreads = 30;
     private static int MAX_THINGS = 10000;
     private static int MAX_BLINKS_PER_THING = 500;
     private static int BLINKS_PER_THING_LIMIT_MIN = 150;
@@ -46,19 +49,51 @@ public class DummyDataPath {
         System.out.println("TIME: "+total);
     }
 
-    private static void fillDummyData() {
-        while (id < START_THING_ID + MAX_THINGS) {
+    private static class RunnableNewMongoDoc implements Runnable {
+//        BasicDBList docs;
+        int thingsByDoc;
+        Long initialId;
+
+        public RunnableNewMongoDoc(int thingsByDoc, Long initialId) {
+            this.thingsByDoc = thingsByDoc;
+            this.initialId = initialId;
+        }
+        @Override
+        public void run() {
             BasicDBList docs = new BasicDBList();
-            int thingsByDoc = (int)(Math.random()*MAX_THINGS_BY_DOC)+5;
-            while ((thingsByDoc-- > 0) && (id < START_THING_ID + MAX_THINGS)) {
-                docs.add(newChild(docs, (int)(Math.random()*THING_TYPE_NAMES.length)));
+//            int thingsByDoc = (int) (Math.random() * MAX_THINGS_BY_DOC) + 5;
+            while ((thingsByDoc-- > 0)) {
+//            while ((thingsByDoc-- > 0) && (id < START_THING_ID + MAX_THINGS)) {
+                docs.add(newChild(docs, (int) (Math.random() * THING_TYPE_NAMES.length), initialId++));
             }
 //             Saving docs to mongo
-            for (Object doc:docs) {
-                MongoDAOUtil.getInstance().getCollection(COLLECTION_NAME).save((BasicDBObject)doc);
+            for (Object doc : docs) {
+                MongoDAOUtil.getInstance().getCollection(COLLECTION_NAME).save((BasicDBObject) doc);
                 // Creating snapshots
                 DummyDataUtils.createSnapshot((BasicDBObject) doc, COLLECTION_SNAPSHOTS, COLLECTION_SNAPSHOTS_IDS, BLINKS_PER_THING_LIMIT_MIN, BLINKS_PER_THING_LIMIT_MAX);
             }
+        }
+    }
+
+    private static void fillDummyData() {
+        ExecutorService executor = Executors.newFixedThreadPool(nThreads);
+
+        while (id < START_THING_ID + MAX_THINGS) {
+            int nThings = (int) (Math.random() * MAX_THINGS_BY_DOC) + 5;
+            RunnableNewMongoDoc runnable = new RunnableNewMongoDoc(nThings, id);
+            executor.execute(runnable);
+            id += nThings;
+//            BasicDBList docs = new BasicDBList();
+//            int thingsByDoc = (int)(Math.random()*MAX_THINGS_BY_DOC)+5;
+//            while ((thingsByDoc-- > 0) && (id < START_THING_ID + MAX_THINGS)) {
+//                docs.add(newChild(docs, (int)(Math.random()*THING_TYPE_NAMES.length)));
+//            }
+////             Saving docs to mongo
+//            for (Object doc:docs) {
+//                MongoDAOUtil.getInstance().getCollection(COLLECTION_NAME).save((BasicDBObject)doc);
+//                // Creating snapshots
+//                DummyDataUtils.createSnapshot((BasicDBObject) doc, COLLECTION_SNAPSHOTS, COLLECTION_SNAPSHOTS_IDS, BLINKS_PER_THING_LIMIT_MIN, BLINKS_PER_THING_LIMIT_MAX);
+//            }
         }
 //        List<Map<String, Object>> thingTypeList = fillThingTypeList();
 //        DummyDataUtils dummyDataUtils = new DummyDataUtils();
@@ -101,7 +136,7 @@ public class DummyDataPath {
 //        }
     }
 
-    private static BasicDBObject newChild(BasicDBList docs, int level) {
+    private static BasicDBObject newChild(BasicDBList docs, int level, Long auxId) {
         BasicDBObject parent = null;
         String pathThingType = null;
         String path = null;
@@ -135,7 +170,7 @@ public class DummyDataPath {
                 level = THING_TYPE_NAMES.length-1;
             }
         }
-        BasicDBObject thingObject = DummyDataUtils.newThing(id++, THING_TYPE_NAMES[level]);
+        BasicDBObject thingObject = DummyDataUtils.newThing(auxId, THING_TYPE_NAMES[level]);
         thingObject.put("thingType", THING_TYPE_NAMES[level]);
         thingObject.put("thingTypeCode", THING_TYPE_CODES[level]);
         thingObject.put("pathThingType", pathThingType);
