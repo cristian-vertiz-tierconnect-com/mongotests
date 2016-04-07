@@ -10,12 +10,12 @@ import java.util.*;
  * Created by rsejas on 3/31/16.
  */
 public class DummyDataPath {
-    private static int MAX_THINGS = 564912;
+    private static int MAX_THINGS = 440038;
     private static int MAX_BLINKS_PER_THING = 500;
     private static int BLINKS_PER_THING_LIMIT_MIN = 150;
     private static int BLINKS_PER_THING_LIMIT_MAX = 500;
     private static int MAX_THINGS_BY_DOC = 20;
-    private static Long START_THING_ID = 445089L;//0
+    private static Long START_THING_ID = 569963L;//0
     private static int MAX_LEVELS = 6;
     private static String COLLECTION_NAME = "path_things";
     private static String COLLECTION_SNAPSHOTS = "path_thingSnapshots";
@@ -59,6 +59,8 @@ public class DummyDataPath {
                 // Creating snapshots
                 DummyDataUtils.createSnapshot((BasicDBObject) doc, COLLECTION_SNAPSHOTS, COLLECTION_SNAPSHOTS_IDS, BLINKS_PER_THING_LIMIT_MIN, BLINKS_PER_THING_LIMIT_MAX);
             }
+            docs.clear();
+            docs = null;
         }
 //        List<Map<String, Object>> thingTypeList = fillThingTypeList();
 //        DummyDataUtils dummyDataUtils = new DummyDataUtils();
