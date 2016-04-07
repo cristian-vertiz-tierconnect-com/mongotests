@@ -12,8 +12,8 @@ import java.util.*;
 public class DummyDataTree {
     // INITIAL_ID = 1: Collection will be deleted
     // INITIAL_ID > 1: Collection will continue from this id
-    private static int INITIAL_ID = 100;
-    private static int MAX_THINGS = 10000;
+    private static int INITIAL_ID = 1;
+    private static int MAX_THINGS = 1000000;
     private static int MAX_THINGS_BY_DOC = 20;
     private static int MAX_LEVELS = 6;
     private static int MAX_BLINKS_PER_THING = 500;
