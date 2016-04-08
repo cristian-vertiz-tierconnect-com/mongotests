@@ -69,7 +69,7 @@ public class DummyDataUtils {
             finalPath = path;
             result.put("path",finalPath);
         }
-        int thingsPerFile = 2500;
+        int thingsPerFile = 25000;
 
         PrintStream stdout = System.out;
         String fileName = "/opt/dev/treeSQL"+(int)(id/thingsPerFile)+".sql";
