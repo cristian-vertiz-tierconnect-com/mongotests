@@ -4,6 +4,7 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import dao.MongoDAOUtil;
 
+import java.io.PrintStream;
 import java.util.*;
 
 /**
@@ -12,7 +13,7 @@ import java.util.*;
 public class DummyDataTree {
     // INITIAL_ID = 1: Collection will be deleted
     // INITIAL_ID > 1: Collection will continue from this id
-    private static int INITIAL_ID = 25764;
+    private static int INITIAL_ID = 1;
     private static int MAX_THINGS = 1000000;
     private static int MAX_THINGS_BY_DOC = 20;
     private static int MAX_LEVELS = 6;
@@ -46,13 +47,16 @@ public class DummyDataTree {
     private static Long id;
 
     public static void main(String[] args) {
-        System.out.println("Starting tree path things");
+        PrintStream stdout = System.out;
+        System.out.println("Starting tree path things at: "+new Date());
         Long initialTime = new Date().getTime();
         Boolean mongoInitialized = initMongo();
         if (mongoInitialized) {
             fillDummyData();
         }
+        System.setOut(stdout);
         System.out.println("Finishing... "+(System.currentTimeMillis()-initialTime));
+        System.out.println("Finishing at "+new Date());
     }
 
     private static void fillDummyData() {

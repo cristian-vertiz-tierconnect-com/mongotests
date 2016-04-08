@@ -69,9 +69,9 @@ public class DummyDataUtils {
             finalPath = path;
             result.put("path",finalPath);
         }
-        int thingsPerFile = 50000;
-        Boolean isNewFile = !((id == 1L) || (id % thingsPerFile == 0));
-        File file = new File("/opt/dev/treeThings"+(int)(id/thingsPerFile)+".sql");
+        int thingsPerFile = 25000;
+        File file = new File("/opt/dev/treeThingsN"+(int)(id/thingsPerFile)+".sql");
+        Boolean isNewFile = file.exists();
         try {
 
             FileOutputStream fis = new FileOutputStream(file, isNewFile);
