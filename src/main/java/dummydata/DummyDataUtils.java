@@ -45,8 +45,8 @@ public class DummyDataUtils {
         return result;
     }
 
-    public BasicDBObject newThingTree(Long id, String thingTypeCode, String path) {
-        String serialNumber = thingTypeCode+String.format("%010d", Integer.parseInt(id.toString()));
+    public BasicDBObject newThingTree(long id, String thingTypeCode, String path) {
+        String serialNumber = thingTypeCode+String.format("%010d", Integer.parseInt(String.valueOf(id)));
         BasicDBObject result = new BasicDBObject();
         String finalPath;
         result.put("_id", id);
@@ -69,9 +69,11 @@ public class DummyDataUtils {
             finalPath = path;
             result.put("path",finalPath);
         }
-        int thingsPerFile = 25000;
+        int thingsPerFile = 2500;
 
-        File file = new File("/opt/dev/treeThings"+(int)(id/thingsPerFile)+".sql");
+        PrintStream stdout = System.out;
+        String fileName = "/opt/dev/treeSQL"+(int)(id/thingsPerFile)+".sql";
+        File file = new File(fileName);
         Boolean isNewFile = file.exists();
         try {
 
@@ -84,6 +86,7 @@ public class DummyDataUtils {
 
         System.out.println("INSERT INTO thing_test (name,serial,path,thingType_code) " +
                 "values ('" +serialNumber+ "','" +serialNumber+ "','" +finalPath+"','" +thingTypeCode+ "');");
+
         return result;
     }
 

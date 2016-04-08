@@ -4,6 +4,7 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import dao.MongoDAOUtil;
 
+import java.io.PrintStream;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -14,9 +15,9 @@ import java.util.concurrent.Executors;
 public class DummyDataTree {
     // INITIAL_ID = 1: Collection will be deleted
     // INITIAL_ID > 1: Collection will continue from this id
-    private static int nThreads = 15;
-    private static int INITIAL_ID = 1100000;
-    private static Long MAX_THINGS = 2000000L;
+    private static int nThreads = 20;
+    private static int INITIAL_ID = 1;
+    private static long MAX_THINGS = 1000000L;
     private static int MAX_THINGS_BY_DOC = 20;
     private static int MAX_LEVELS = 6;
     private static int MAX_BLINKS_PER_THING = 500;
@@ -46,22 +47,25 @@ public class DummyDataTree {
             "pallete,carton,box,item,rfid",
     };
     private static String[] LEVELS = {"pallete", "carton", "box", "item", "rfid"};
-    private static Long id;
 
     public static void main(String[] args) {
-        System.out.println("Starting tree path things");
-        Long initialTime = new Date().getTime();
+        PrintStream stdout = System.out;
+        System.out.println("Starting tree path things at "+new Date());
+        long initialTime = new Date().getTime();
         Boolean mongoInitialized = initMongo();
         if (mongoInitialized) {
-            fillDummyData();
+            DummyDataTree dummyDataTree = new DummyDataTree();
+            dummyDataTree.fillDummyData();
         }
+        System.setOut(stdout);
         System.out.println("Finishing... "+(System.currentTimeMillis()-initialTime));
+        System.out.println("Finishing at "+new Date());
     }
 
-    private static class RunnableTree implements Runnable {
-        private static int thingsByDoc;
-        private static Long initialId;
-        public RunnableTree(int thingsByDoc, Long initialId) {
+    public class RunnableTree implements Runnable {
+         int thingsByDoc;
+         long initialId;
+        public RunnableTree(int thingsByDoc, long initialId) {
             this.thingsByDoc = thingsByDoc;
             this.initialId = initialId;
         }
@@ -72,16 +76,16 @@ public class DummyDataTree {
             doc = removePathFrom(doc);
             MongoDAOUtil.getInstance().getCollection(COLLECTION_NAME).save(doc);
         }
-        private static BasicDBObject createThingDoc(int nThings) {
+        private  BasicDBObject createThingDoc(int nThings) {
             DummyDataUtils dummyDataUtils = new DummyDataUtils();
-            BasicDBObject parent = dummyDataUtils.newThingTree(++id, LEVELS[0], "");
+            BasicDBObject parent = dummyDataUtils.newThingTree(++initialId, LEVELS[0], "");
             while ((--nThings > 0) && (initialId < MAX_THINGS)){
                 parent = addChild(parent, LEVELS[0], 1, (int)(Math.random()*5));
             }
             return parent;
         }
 
-        private static BasicDBObject addChild(BasicDBObject thingBase, String path, int initialLevel, int level) {
+        private  BasicDBObject addChild(BasicDBObject thingBase, String path, int initialLevel, int level) {
             // Creating rfid
             if ((int)(Math.random()*10) < 3) {
                 BasicDBList things = (BasicDBList) thingBase.get(LEVELS[4]);
@@ -125,15 +129,34 @@ public class DummyDataTree {
             }
             return thingBase;
         }
+
+        private  BasicDBObject removePathFrom(BasicDBObject thing) {
+            for (String level:LEVELS) {
+                BasicDBList things = (BasicDBList) thing.get(level);
+                if (things != null) {
+                    for (int i = 0; i < things.size(); i++) {
+                        BasicDBObject auxThing = (BasicDBObject) things.get(i);
+                        things.remove(i);
+                        auxThing = removePathFrom(auxThing);
+                        things.add(i, auxThing);
+                    }
+                }
+            }
+            thing.remove("path");
+            // Creating snapshots
+            DummyDataUtils dummyDataUtils = new DummyDataUtils();
+            dummyDataUtils.createSnapshot(thing, COLLECTION_SNAPSHOTS, COLLECTION_SNAPSHOTS_IDS, BLINKS_PER_THING_LIMIT_MIN, BLINKS_PER_THING_LIMIT_MAX);
+            return thing;
+        }
     }
 
-    private static void fillDummyData() {
+    public void fillDummyData() {
         if (INITIAL_ID == 1) {
             MongoDAOUtil.getInstance().getCollection(COLLECTION_NAME).drop();
             MongoDAOUtil.getInstance().getCollection(COLLECTION_SNAPSHOTS_IDS).drop();
             MongoDAOUtil.getInstance().getCollection(COLLECTION_SNAPSHOTS).drop();
         }
-        id = INITIAL_ID - 1L;
+        long id = INITIAL_ID - 1L;
         // N things
         ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
         while (id < MAX_THINGS) {
@@ -143,26 +166,6 @@ public class DummyDataTree {
             id += nThings;
         }
     }
-
-    private static BasicDBObject removePathFrom(BasicDBObject thing) {
-        for (String level:LEVELS) {
-            BasicDBList things = (BasicDBList) thing.get(level);
-            if (things != null) {
-                for (int i = 0; i < things.size(); i++) {
-                    BasicDBObject auxThing = (BasicDBObject) things.get(i);
-                    things.remove(i);
-                    auxThing = removePathFrom(auxThing);
-                    things.add(i, auxThing);
-                }
-            }
-        }
-        thing.remove("path");
-        // Creating snapshots
-        DummyDataUtils.createSnapshot(thing, COLLECTION_SNAPSHOTS, COLLECTION_SNAPSHOTS_IDS, BLINKS_PER_THING_LIMIT_MIN, BLINKS_PER_THING_LIMIT_MAX);
-        return thing;
-    }
-
-
 
     private static List<Map<String, Object>> fillThingTypeList() {
         List<Map<String, Object>> result = new ArrayList<>();
@@ -185,5 +188,4 @@ public class DummyDataTree {
         }
         return false;
     }
-
 }
