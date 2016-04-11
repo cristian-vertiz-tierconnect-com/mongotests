@@ -5,7 +5,7 @@ apply plugin: 'java'
 
 jar {
     manifest {
-        attributes 'Main-Class': 'dummydata.DummyDataTree'
+        attributes 'Main-Class': 'dummydata.DummyDataPath'
     }
 }
 
@@ -20,9 +20,9 @@ task fatJar(type: Jar) {
     manifest {
         attributes 'Implementation-Title': 'Gradle Jar File Example',
                 'Implementation-Version': version,
-                'Main-Class': 'dummydata.DummyDataTree'
+                'Main-Class': 'dummydata.DummyDataPath'
     }
-    baseName = project.name + '-all'
+    baseName = project.name + '-path'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
