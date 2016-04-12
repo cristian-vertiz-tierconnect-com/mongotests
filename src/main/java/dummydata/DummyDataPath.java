@@ -13,12 +13,12 @@ import java.util.concurrent.Executors;
  */
 public class DummyDataPath {
     private static int nThreads = 20;
-    private static int MAX_THINGS = 519355;
+    private static int MAX_THINGS = 20000;
     private static int MAX_BLINKS_PER_THING = 500;
     private static int BLINKS_PER_THING_LIMIT_MIN = 150;
     private static int BLINKS_PER_THING_LIMIT_MAX = 500;
     private static int MAX_THINGS_BY_DOC = 20;
-    private static long START_THING_ID = 480646L;//0
+    private static long START_THING_ID = 1L;//0
     private static int MAX_LEVELS = 6;
     private static String COLLECTION_NAME = "path_things";
     private static String COLLECTION_SNAPSHOTS = "path_thingSnapshots";
