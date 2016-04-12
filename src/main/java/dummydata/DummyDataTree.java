@@ -50,7 +50,7 @@ public class DummyDataTree {
 
     public static void main(String[] args) {
         PrintStream stdout = System.out;
-        System.out.println("Starting tree path things at "+new Date());
+        System.out.println("Starting tree things at "+new Date());
         long initialTime = new Date().getTime();
         Boolean mongoInitialized = initMongo();
         if (mongoInitialized) {

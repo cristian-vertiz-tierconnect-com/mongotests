@@ -2,17 +2,13 @@ package dummydata;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import dao.MongoDAOUtil;
 import org.apache.commons.lang.StringUtils;
 import org.bson.types.ObjectId;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 /**
  * Created by rsejas on 3/31/16.
@@ -80,13 +76,12 @@ public class DummyDataUtils {
             FileOutputStream fis = new FileOutputStream(file, isNewFile);
             PrintStream out = new PrintStream(fis);
             System.setOut(out);
-        } catch (FileNotFoundException e) {
+            System.out.println("INSERT INTO thing_test (name,serial,path,thingType_code) " +
+                    "values ('" +serialNumber+ "','" +serialNumber+ "','" +finalPath+"','" +thingTypeCode+ "');");
+            fis.close();
+        }catch (IOException e) {
             e.printStackTrace();
         }
-
-        System.out.println("INSERT INTO thing_test (name,serial,path,thingType_code) " +
-                "values ('" +serialNumber+ "','" +serialNumber+ "','" +finalPath+"','" +thingTypeCode+ "');");
-
         return result;
     }
 
@@ -117,9 +112,12 @@ public class DummyDataUtils {
         Long delta = 100000*1000L;
         int maxBlinks = (int)(Math.random()*(blinksLimitMax-blinksLimitMin)) + blinksLimitMin + 1;
         Long timeMili = date.getTime() - (maxBlinks+1)*delta;
+        List<DBObject> snapshots = new ArrayList<>();
+        String thingId = thingObject.get("_id").toString();
         for(int i = 0; i < maxBlinks; i++) {
-            BasicDBObject snapshot = new BasicDBObject();
-
+            DBObject snapshot = new BasicDBObject();
+            String snapshotId = thingId+String.format("%05d", i);
+            snapshot.put("_id", Long.valueOf(snapshotId));
             if(i > 0) {
                 thingObject.put("color", DummyDataUtils.getRandomValueFrom(DummyDataUtils.colorsList));
                 thingObject.put("size", DummyDataUtils.getRandomValueFrom(DummyDataUtils.sizeList));
@@ -127,8 +125,9 @@ public class DummyDataUtils {
 
             snapshot.put("value",thingObject);
             snapshot.put("time", new Date(timeMili));
-            MongoDAOUtil.getInstance().getCollection(collSnapshots).save(snapshot);
-            ObjectId objId = (ObjectId)snapshot.get( "_id" );
+//            MongoDAOUtil.getInstance().getCollection(collSnapshots).save(snapshot);
+            snapshots.add(snapshot);
+            Object objId = snapshot.get( "_id" );
 
             BasicDBObject blink = new BasicDBObject();
             blink.put("time", timeMili);
@@ -140,6 +139,7 @@ public class DummyDataUtils {
         BasicDBObject snapshotId = new BasicDBObject();
         snapshotId.put("_id",thingObject.get("_id"));
         snapshotId.put("blinks",blinks);
+        MongoDAOUtil.getInstance().getCollection(collSnapshots).insert(snapshots);
         MongoDAOUtil.getInstance().getCollection(collSnapshotsIds).save(snapshotId);
     }
 }
