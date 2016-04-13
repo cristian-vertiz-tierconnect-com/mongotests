@@ -44,6 +44,8 @@ public class DummyDataPath {
         DummyDataPath dummyDataPath = new DummyDataPath();
         if (mongoInitialized) {
             dummyDataPath.fillDummyData();
+        } else {
+            System.out.println("Mongo connection failed!");
         }
         final long endTime = System.currentTimeMillis();
         final long total = endTime-startTime;
